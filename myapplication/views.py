@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-from .models import UserInformation
 from .forms import UserSignUpForm
 
 # Create your views here.
@@ -9,7 +8,7 @@ def sign_up(request):
 
 def sign_user_in(request):
 	if request.method == 'POST':
-		form = UserSignUpForm(request.POST or None)
+		form = UserSignUpForm(request.POST)
 		if form.is_valid():
 			username = request.POST.get('username', '')
 			print(username);
