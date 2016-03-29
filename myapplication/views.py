@@ -19,7 +19,7 @@ def sign_user_in(request):
 			lname = request.POST.get('lname', '')
 			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = "none", lastname = "none")
 			user_inf_obj.save()
-			return HttpResponseRedirect('sign_up')
+			return HttpResponseRedirect('')
 	else:
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
