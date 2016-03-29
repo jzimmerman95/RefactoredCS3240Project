@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from .forms import UserSignUpForm
 from .models import UserInformation
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 # Create your views here.
 def home_page(request):
@@ -19,8 +21,12 @@ def sign_user_up(request):
 			email = request.POST.get('email', '')
 			fname = request.POST.get('fname', '')
 			lname = request.POST.get('lname', '')
+			# insert the user into the  model you created
 			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
 			user_inf_obj.save()
+			# create and save a user object for authentication
+			user = User.objects.create_user(username, pwd, email, fname, lname)
+			user.save()
 			return HttpResponseRedirect('successful_signup')
 	else:
 		form = UserSignUpForm()
@@ -28,6 +34,10 @@ def sign_user_up(request):
 
 def sign_in(request):
 		return render(request, 'myapplication/signIn.html', {})
+
+# def sign_user_in(request):
+# 		if request.method == 'POST'
+
 
 def successful_signup(request):
 	return render(request, 'myapplication/successfulSignUp.html', {})	
