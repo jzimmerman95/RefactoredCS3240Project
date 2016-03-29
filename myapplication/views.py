@@ -12,15 +12,15 @@ def sign_user_in(request):
 		form = User(request.POST)
 		if form.is_valid():
 			username = request.POST.get('username', '')
-                        pwd = request.POST.get('password', '')
+			pwd = request.POST.get('password', '')
 			email = request.POST.get('email', '')
 			fname = request.POST.get('firstname', '')
 			lname = request.POST.get('lastname', '')
-                        user_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
-                        user_obj.save()
+			user_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
+			user_obj.save()
 			return HttpResponseRedirect('sign_up')
 	else:
-               	form = UserSignUpForm()
+		form = UserSignUpForm()
 	return render(request, 'signUp.html', {
 		'form': UserSignUpForm(),
 	})
