@@ -5,10 +5,10 @@ from .forms import UserSignUpForm
 
 # Create your views here.
 def sign_up(request):
-        return render(request, 'myapplication/signUp.html', {})
+	return render(request, 'myapplication/signUp.html', {})
 
 def sign_user_in(request):
-	 if request.method == 'POST':
+	if request.method == 'POST':
 		form = User(request.POST)
 		if form.is_valid():
 			username = request.POST.get('username', '')
