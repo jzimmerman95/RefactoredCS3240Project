@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-from .forms import UserSignUpForm
+from .forms import UserSignUpForm, UserSignInForm
 from .models import UserInformation
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
