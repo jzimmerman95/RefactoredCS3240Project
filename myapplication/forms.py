@@ -5,4 +5,4 @@ from .models import UserInformation
 class UserSignUpForm(ModelForm):
 	class Meta:
 		model = UserInformation
-		fields=('username')
+		fields=('username',)
