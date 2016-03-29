@@ -47,11 +47,11 @@ def sign_user_in(request):
 					if user.is_active:
 						return render(request, 'myapplication/memberHomePage.html', {})
 					else:
-						return render(request, 'myapplication/homePage.html', {})
+						return render(request, 'myapplication/signIn.html', {})
 				else:
 					# the authentication system was unable to verify the username and password
 					return render(request, 'myapplication/signIn.html', {})
-		return render(request, 'myapplication/signIn.html', {})
+		return render(request, 'myapplication/homePage.html', {})
 
 def member_home_page(request):
 	return render(request, 'myapplication/memberHomePage.html', {})
