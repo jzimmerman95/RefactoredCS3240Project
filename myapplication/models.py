@@ -6,5 +6,3 @@ class UserInformation(models.Model):
 	email = models.EmailField(max_length=200, default='none')
 	firstname = models.CharField(max_length=200, default='none')
 	lastname = models.CharField(max_length=200, default='none')
-	def __str__(self):
-        return self.username
