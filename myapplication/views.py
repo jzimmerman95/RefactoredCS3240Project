@@ -4,10 +4,13 @@ from .forms import UserSignUpForm
 from .models import UserInformation
 
 # Create your views here.
+def home_page(request):
+	return render(request, 'myapplication/homePage.html', {})
+
 def sign_up(request):
 	return render(request, 'myapplication/signUp.html', {})
 
-def sign_user_in(request):
+def sign_user_up(request):
 	if request.method == 'POST':
 		form = UserSignUpForm(request.POST)
 		if form.is_valid():
@@ -22,6 +25,9 @@ def sign_user_in(request):
 	else:
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
+
+def sign_in(request):
+		return render(request, 'myapplication/signIn.html', {})
 
 def successful_signup(request):
 	return render(request, 'myapplication/successfulSignUp.html', {})	
