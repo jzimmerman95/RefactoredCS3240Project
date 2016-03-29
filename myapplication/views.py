@@ -11,14 +11,14 @@ def sign_user_in(request):
 	if request.method == 'POST':
 		form = UserSignUpForm(request.POST)
 		if form.is_valid():
-			username = request.POST.get('username', '')
-			print(username);
-			pwd = request.POST.get('password', '')
-			email = request.POST.get('email', '')
-			fname = request.POST.get('fname', '')
-			lname = request.POST.get('lname', '')
-			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = "none", lastname = "none")
-			user_inf_obj.save()
+			#username = request.POST.get('username', '')
+			#pwd = request.POST.get('password', '')
+			#email = request.POST.get('email', '')
+			#fname = request.POST.get('fname', '')
+			#lname = request.POST.get('lname', '')
+			#user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
+			#user_inf_obj.save()
+			form.save()
 			return HttpResponseRedirect('')
 	else:
 		form = UserSignUpForm()
