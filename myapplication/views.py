@@ -4,6 +4,9 @@ from .forms import UserSignUpForm, UserSignInForm
 from .models import UserInformation
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+# imports for encrytion
+from Crypto.PublicKey import RSA
+from Crypto import Random
 
 # Create your views here.
 def home_page(request):
@@ -21,8 +24,12 @@ def sign_user_up(request):
 			email = request.POST.get('email', '')
 			fname = request.POST.get('fname', '')
 			lname = request.POST.get('lname', '')
-			# insert the user into the  model you created
-			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
+			# generate key
+			random_generator = Random.new().read
+			key = RSA.generate(1024, random_generator)
+			publicKey = key.publickey()
+			# insert the user into the  model you created, including the generated public key
+			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname, publickey = publicKey)
 			user_inf_obj.save()
 			# create and save a user object for authentication
 			user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)

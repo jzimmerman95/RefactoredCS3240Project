@@ -8,7 +8,7 @@ class UserSignUpForm(ModelForm):
 		model = UserInformation
 		fields=('username', )
 
-class UserSignInForm(ModelForm):
-	class Meta:
-		model = User
-		fields=('username',)
+# class UserSignInForm(ModelForm):
+# 	class Meta:
+# 		model = User
+# 		fields=('username',)
