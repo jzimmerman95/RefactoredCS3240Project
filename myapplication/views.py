@@ -35,9 +35,25 @@ def sign_user_up(request):
 def sign_in(request):
 		return render(request, 'myapplication/signIn.html', {})
 
-# def sign_user_in(request):
-# 		if request.method == 'POST'
+def sign_user_in(request):
+		if request.method == 'POST'
+			form = UserSignInForm(request.POST)
+			if form.is_valid()
+				username=request.POST.get('username', '')
+				pwd = request.POST.get('password', '')
+				user = authenticate(username=username, password=pwd)
+				if user is not None:
+    				# the password verified for the user
+    				if user.is_active:
+    					return HttpResponseRedirect('member_home_page')
+					else:
+        				return HttpResponseRedirect('sign_in')
+				else:
+    				# the authentication system was unable to verify the username and password
+    				return HttpResponseRedirect('sign_in')
 
+def member_home_page(request):
+	return render(request, 'myapplication/memberHomePage.html', {})
 
 def successful_signup(request):
 	return render(request, 'myapplication/successfulSignUp.html', {})	

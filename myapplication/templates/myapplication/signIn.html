@@ -1,6 +1,6 @@
 <html>
 	<p>Please enter your username and password:</p>
-	<form method="POST">
+	<form action="sign_user_in" method="POST">
 		{% csrf_token %}
 		Username: <br>
 		<input type="text" name="username"><br>
