@@ -45,7 +45,7 @@ def sign_user_in(request):
 				if user is not None:
     				# the password verified for the user
 					if user.is_active:
-						return HttpResponseRedirect('member_home_page')
+						return render(request, 'myapplication/memberHomePage.html', {})
 					else:
 						return render(request, 'myapplication/signIn.html', {})
 				else:
