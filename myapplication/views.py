@@ -34,7 +34,7 @@ def sign_user_up(request):
 			# create and save a user object for authentication
 			user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
 			user.save()
-			return HttpResponseRedirect('successful_signup')
+			return HttpResponseRedirect('')
 	else:
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
