@@ -21,7 +21,7 @@ def sign_user_in(request):
 			user_inf_obj.save()
 			return HttpResponseRedirect('sign_up')
 	else:
-		form = UserSignUpForm(request.POST)
+		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
 
 def signup_failed(request):
