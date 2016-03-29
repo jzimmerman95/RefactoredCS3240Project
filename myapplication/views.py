@@ -25,7 +25,7 @@ def sign_user_up(request):
 			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
 			user_inf_obj.save()
 			# create and save a user object for authentication
-			user = User.objects.create_user(username, pwd, email, fname, lname)
+			user = User.objects.create_user(username=username, password=pwd)
 			user.save()
 			return HttpResponseRedirect('successful_signup')
 	else:
