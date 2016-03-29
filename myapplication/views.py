@@ -51,6 +51,7 @@ def sign_user_in(request):
 				else:
 					# the authentication system was unable to verify the username and password
 					return render(request, 'myapplication/signIn.html', {})
+		return render(request, 'myapplication/signIn.html', {})
 
 def member_home_page(request):
 	return render(request, 'myapplication/memberHomePage.html', {})
