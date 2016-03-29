@@ -38,7 +38,15 @@ def sign_in(request):
 def sign_user_in(request):
 		username=request.POST.get('username', '')
 		pwd = request.POST.get('password', '')
-		return render(request, 'myapplication/memberHomePage.html', {})
+		user = authenticate(username=username, password=pwd)
+		if user is not None:
+			if user.is_active:
+				return render(request, 'myapplication/memberHomePage.html', {})
+			else:
+				return render(request, 'myapplication/homePage.html', {})
+		else: 
+			return render(request, 'myapplication/homePage.html', {})
+		# return render(request, 'myapplication/memberHomePage.html', {})
 		# if request.method == 'POST':
 		# 	form = UserSignInForm(request.POST)
 		# 	if form.is_valid():
