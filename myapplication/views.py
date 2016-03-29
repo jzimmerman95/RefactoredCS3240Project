@@ -36,9 +36,9 @@ def sign_in(request):
 		return render(request, 'myapplication/signIn.html', {})
 
 def sign_user_in(request):
-		if request.method == 'POST'
+		if request.method == 'POST':
 			form = UserSignInForm(request.POST)
-			if form.is_valid()
+			if form.is_valid():
 				username=request.POST.get('username', '')
 				pwd = request.POST.get('password', '')
 				user = authenticate(username=username, password=pwd)
