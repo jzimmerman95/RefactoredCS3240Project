@@ -16,8 +16,8 @@ def sign_user_in(request):
 			email = request.POST.get('email', '')
 			fname = request.POST.get('firstname', '')
 			lname = request.POST.get('lastname', '')
-			user_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
-			user_obj.save()
+			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname)
+			user_inf_obj.save()
 			return HttpResponseRedirect('sign_up')
 	else:
 		form = UserSignUpForm()
