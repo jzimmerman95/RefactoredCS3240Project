@@ -1,5 +1,5 @@
 <html>
-    <form action="sign_user_in" method="POST">
+    <form action="sign_user_up" method="POST">
         {% csrf_token %}
 	{% if form.errors %}
 		{% for field in form %}
