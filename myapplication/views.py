@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from .forms import UserSignUpForm
+from .models import UserInformation
 
 # Create your views here.
 def sign_up(request):
