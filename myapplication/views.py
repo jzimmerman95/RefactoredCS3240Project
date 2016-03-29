@@ -21,7 +21,9 @@ def sign_user_in(request):
 			return HttpResponseRedirect('sign_up')
 	else:
 		form = UserSignUpForm()
-	return render(request, 'myapplication/signUp.html', {
+	return render(request, 'myapplication/signupFailed.html', {
 		'form': UserSignUpForm(),
 	})
-		
+
+def signup_failed(request):
+	return render(request, 'myapplication/signupFailed.html', {})	
