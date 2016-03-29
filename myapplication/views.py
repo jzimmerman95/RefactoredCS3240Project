@@ -36,33 +36,16 @@ def sign_in(request):
 		return render(request, 'myapplication/signIn.html', {})
 
 def sign_user_in(request):
-		username=request.POST.get('username', '')
-		pwd = request.POST.get('password', '')
-		user = authenticate(username=username, password=pwd)
-		if user is not None:
-			if user.is_active:
-				return render(request, 'myapplication/memberHomePage.html', {})
-			else:
-				return render(request, 'myapplication/homePage.html', {})
-		else: 
+	username=request.POST.get('username', '')
+	pwd = request.POST.get('password', '')
+	user = authenticate(username=username, password=pwd)
+	if user is not None:
+		if user.is_active:
+			return render(request, 'myapplication/memberHomePage.html', {})
+		else:
 			return render(request, 'myapplication/homePage.html', {})
-		# return render(request, 'myapplication/memberHomePage.html', {})
-		# if request.method == 'POST':
-		# 	form = UserSignInForm(request.POST)
-		# 	if form.is_valid():
-		# 		username=request.POST.get('username', '')
-		# 		pwd = request.POST.get('password', '')
-		# 		user = authenticate(username=username, password=pwd)
-		# 		if user is not None:
-  #   				# the password verified for the user
-		# 			if user.is_active:
-		# 				return render(request, 'myapplication/memberHomePage.html', {})
-		# 			else:
-		# 				return render(request, 'myapplication/signIn.html', {})
-		# 		else:
-		# 			# the authentication system was unable to verify the username and password
-		# 			return render(request, 'myapplication/signIn.html', {})
-		# return render(request, 'myapplication/homePage.html', {})
+	else: 
+		return render(request, 'myapplication/homePage.html', {})
 
 def member_home_page(request):
 	return render(request, 'myapplication/memberHomePage.html', {})
