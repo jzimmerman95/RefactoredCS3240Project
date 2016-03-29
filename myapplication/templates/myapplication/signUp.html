@@ -1,31 +1,53 @@
 <html>
-    <form action="sign_user_up" method="POST">
-        {% csrf_token %}
-	{% if form.errors %}
-		{% for field in form %}
-			{% for error in field.errors %}
-				<div class="alert alert-error">
-					<strong>{{ field.name }}</strong>
-					<strong>{{ error|escape }}</strong>
-				</div>
-			{% endfor %}
-		{% endfor %}
-		{% for error in form.non_field_errors %}
-			<div class="alert alert-error">
-				<strong>{{ error|escape }}</strong>
-			</div>
-		{% endfor %}
-	{% endif %}
-	Username: <br>
-	<input type="text" name="username"><br>
-	Password: <br>
-	<input type="text" name="password"><br>
-    Email: <br>
-	<input type="text" name="email"><br>
-	First name: <br>
-	<input type="text" name="fname"><br>
-	Last name: <br> 
-	<input type="text" name="lname"><br>
-        <input type="submit" value="Submit"><br>
-    </form>
+	<head>
+		<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		p {
+			color: navy;
+		}
+		label {
+			float: left;
+		    width: 100px;
+		}
+		</style>
+	</head>
+	<body>
+		<p><b>Please fill out the form to sign up for SafeCollab:</b></p><br>
+	    <form action="sign_user_up" method="POST">
+			{% csrf_token %}
+			{% if form.errors %}
+				{% for field in form %}
+					{% for error in field.errors %}
+						<div class="alert alert-error">
+							<strong>{{ field.name }}</strong>
+							<strong>{{ error|escape }}</strong>
+						</div>
+					{% endfor %}
+				{% endfor %}
+				{% for error in form.non_field_errors %}
+					<div class="alert alert-error">
+						<strong>{{ error|escape }}</strong>
+					</div>
+				{% endfor %}
+			{% endif %}
+			<label for="username">Username: </label>
+			<input type="text" name="username"><br>
+
+			<label for="password">Password: </label>
+			<input type="text" name="password"><br>
+
+		    <label for="email">Email: </label>
+			<input type="text" name="email"><br>
+
+			<label for="fname">First Name: </label>
+			<input type="text" name="fname"><br>
+
+			<label for="lname">Last Name: </label>
+			<input type="text" name="lname"><br>
+		    
+		    <input type="submit" value="Sign Up"><br>
+	    </form>
+	</body>
 </html>

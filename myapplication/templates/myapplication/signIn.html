@@ -1,11 +1,29 @@
 <html>
-	<p>Please enter your username and password:</p>
-	<form action="sign_user_in" method="POST">
-		{% csrf_token %}
-		Username: <br>
-		<input type="text" name="username"><br>
-		Password: <br>
-		<input type="text" name="password"><br>
-		<input type="submit" value="Sign In"><br>
-	</form>
+	<head>
+		<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		p {
+			color: navy;
+		}
+		label {
+			float: left;
+		    width: 100px;
+		}
+		</style>
+	</head>
+	<body>
+		<p><b>Please enter your username and password:</b></p>
+		<form action="sign_user_in" method="POST">
+			{% csrf_token %}
+			<label for="username">Username: </label>
+			<input type="text" name="username"><br>
+
+			<label for="password">Password: </label>
+			<input type="text" name="password"><br>
+
+			<input type="submit" value="Sign In"><br>
+		</form>
+	</body>
 </html>
