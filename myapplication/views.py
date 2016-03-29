@@ -44,13 +44,13 @@ def sign_user_in(request):
 				user = authenticate(username=username, password=pwd)
 				if user is not None:
     				# the password verified for the user
-    				if user.is_active:
-    					return HttpResponseRedirect('member_home_page')
+					if user.is_active:
+						return HttpResponseRedirect('member_home_page')
 					else:
-        				return HttpResponseRedirect('sign_in')
+						return HttpResponseRedirect('sign_in')
 				else:
-    				# the authentication system was unable to verify the username and password
-    				return HttpResponseRedirect('sign_in')
+					# the authentication system was unable to verify the username and password
+					return HttpResponseRedirect('sign_in')
 
 def member_home_page(request):
 	return render(request, 'myapplication/memberHomePage.html', {})
