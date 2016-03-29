@@ -12,6 +12,7 @@ def sign_user_in(request):
 		form = UserSignUpForm(request.POST)
 		if form.is_valid():
 			username = request.POST.get('username', '')
+			print(username);
 			pwd = request.POST.get('password', '')
 			email = request.POST.get('email', '')
 			fname = request.POST.get('fname', '')
@@ -21,7 +22,7 @@ def sign_user_in(request):
 			return HttpResponseRedirect('sign_up')
 	else:
 		form = UserSignUpForm()
-	return render(request, 'myapplication/signupFailed.html', {
+	return render(request, 'myapplication/signUp.html', {
 		'form': UserSignUpForm(),
 	})
 
