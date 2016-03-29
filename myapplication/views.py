@@ -9,7 +9,7 @@ def sign_up(request):
 
 def sign_user_in(request):
 	if request.method == 'POST':
-		form = User(request.POST)
+		form = UserSignUpForm(request.POST)
 		if form.is_valid():
 			username = request.POST.get('username', '')
 			pwd = request.POST.get('password', '')
