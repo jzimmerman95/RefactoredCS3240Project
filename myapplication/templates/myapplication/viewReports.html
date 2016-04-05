@@ -1,18 +1,28 @@
-<!-- <html>
-
+<html>
+	<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		h3 {
+			color: navy;
+		}
+	</style>
 	<table>
-	    <tr>
-	        <th>Field 1</th>
-	        ...
-	        <th>Field N</th>
-	    </tr>
-	    {% for item in query_results %}
-	    <tr> 
-	        <td>{{ item.field1 }}</td>
-	        ...
-	        <td>{{ item.fieldN }}</td>
-	    </tr>
-	    {% endfor %}
+		<tr>
+			<th>Report Name</th>
+			<th>Public/Private</th>
+			<th>File(s)</th>
+		</tr>
+		{% for report in reports %}
+		<tr> 
+			<td>{{ report.reportname }}</td>
+			<td>{{ report.isprivate }}</td>
+			{% for r in reportfiles %}
+				{% ifequal report.reportname r.reportname %}
+					<td>{{ r.uploadfile.name }}</td>
+				{% endifequal %}
+			{% endfor %}
+		</tr>
+		{% endfor %}
 	</table>
-
-</html> -->
+</html>

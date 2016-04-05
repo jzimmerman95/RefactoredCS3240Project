@@ -32,7 +32,6 @@
 		    element = $('<br>{{ form.uploadfile }}');
 		    element.attr('name', 'extra_field_' + form_count);
 		    element.appendTo(".files")
-		    //element.insertBefore(".buttonFormat1");
 
 		    form_count++;
 		    $("[name=extra_field_count]").val(form_count);
@@ -41,7 +40,7 @@
 	</script>
 	<h3>Create a report:</h3>
 	<div id="forms">
-		<form id="submitForm" action="create_report" method="POST">
+		<form id="submitForm" action="create_report" method="POST" enctype="multipart/form-data">
 			{% csrf_token %}
 			<div>
 				{{ form.errors }}

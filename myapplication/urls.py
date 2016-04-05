@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^member_home_page$', views.member_home_page, name='member_home_page'),
     url(r'^failed_login$', views.failed_login, name='failed_login'),
     url(r'^create_report$', views.create_report, name='create_report'),
+    url(r'^view_reports$', views.view_reports, name='view_reports'),
 ]

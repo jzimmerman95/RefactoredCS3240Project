@@ -30,7 +30,7 @@ class Report(models.Model):
 
 class ReportFiles(models.Model):
 	reportname = models.CharField(max_length=100)
-	uploadfile = models.FileField()
+	uploadfile = models.FileField(upload_to='.')
 
 class ReportGroups(models.Model):
 	reportname = models.CharField(max_length=100)

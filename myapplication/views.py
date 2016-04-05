@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
+from django.core.servers.basehttp import FileWrapper
 from .forms import UserSignUpForm, ReportForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups
 # for authentication
@@ -9,6 +10,7 @@ from django.contrib.auth import authenticate
 from Crypto.PublicKey import RSA
 from Crypto import Random
 from django.core.exceptions import ObjectDoesNotExist
+
 
 # Create your views here.
 def home_page(request):
@@ -64,7 +66,7 @@ def failed_login(request):
 
 def create_report(request):
 	if request.method == 'POST':
-		form = ReportForm(request.POST)
+		form = ReportForm(request.POST, request.FILES)
 		if form.is_valid():
 			# create a report object
 			reportname = request.POST.get('reportname')
@@ -87,11 +89,10 @@ def create_report(request):
 				report_obj.save()
 				
 				# store all files associated with that report in the file database
-				for key in request.POST:
-					if key == "uploadfile" or ("extra" in str(key)):
-						uploadfile=request.POST.get(key)
-						report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
-						report_file_obj.save()	
+				for filename in request.FILES:
+					uploadfile=request.FILES[filename]
+					report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
+					report_file_obj.save()
 
 				# store all groups associated with that (private) report in the file database
 				if isprivate == "private":
@@ -108,6 +109,8 @@ def create_report(request):
 		form = ReportForm()
 	return render(request, 'myapplication/createReport.html', {'form': form})
 
-# def view_reports(request):
-# 	query_results = Report.objects.all()
-# 	return render(request, 'myapplication/viewReports.html', {})
+def view_reports(request):
+	# f = ReportFiles.objects.get(reportname="name8")
+	# response = HttpResponse(FileWrapper(f.uploadfile), content_type="image/jpg")
+	# return response
+	return render(request, 'myapplication/viewReports.html', {'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all()})
