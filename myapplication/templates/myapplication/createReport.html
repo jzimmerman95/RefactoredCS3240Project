@@ -1,0 +1,77 @@
+<html>
+	<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		h3 {
+			color: navy;
+		}
+		.largefields label {
+			float: left;
+		    width: 130px;
+		}
+		.smallfields label {
+			float: left;
+			width: 35px;
+		}
+		div.buttonFormat1 {
+			float: left;
+			width: 10%;
+			margin-top: 16px;
+		}
+		div.buttonFormat2 {
+			float:left;
+			width: 10%;
+		}
+	</style>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		var form_count = $("[extra_field_count]");
+		// get extra form count so we know what index to use for the next item.
+		function addFileSubmit() {
+		    element = $('{{ form.uploadfile }}<br>');
+		    element.attr('name', 'extra_field_' + form_count);
+		    element.insertBefore(".buttonFormat1");
+		    //$("#forms").append(element);
+		    // build element and append it to our forms container
+
+		    form_count++;
+		    $("[name=extra_field_count]").val(form_count);
+		    // increment form count so our view knows to populate 
+		    // that many fields for validation
+		}
+		
+	</script>
+	<form id="submitForm" action="create_report" method="POST">
+		<div id="forms">
+			{% csrf_token %}
+			<div class="largefields">
+				<label for="reportname">Report Name: </label>
+		 		{{ form.reportname }}
+		 	</div>
+		 	<div class="largefields">
+				<label for="summary">Report Summary: </label>
+		    	{{ form.summary }}
+			</div>
+			<div>
+				<label for="description">Report Description: </label><br>
+		    	{{ form.description }}
+			</div>
+			<label for="containsencrypted">Are you uploading encrypted files?</label><br>
+			<div class="smallfields">
+				<label for="containsencrypted">Yes</label>
+				{{ form.containsencrypted }}
+			</div>
+			<div>
+				<label for="uploadfile">Add a file</label><br>
+				{{ form.uploadfile }}
+			</div>
+			<div class="buttonFormat1">
+				<input type="submit" value="Submit Form">
+			</div>
+		</div>
+	</form>
+	<div class="buttonFormat2">
+		<button id="add-another" onclick="addFileSubmit()">Add another file</button>
+	</div>
+</html>

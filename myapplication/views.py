@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-from .forms import UserSignUpForm
+from .forms import UserSignUpForm, ReportForm
 from .models import UserInformation
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -58,4 +58,19 @@ def member_home_page(request):
 	return render(request, 'myapplication/memberHomePage.html', {})
 
 def failed_login(request):
-	return render(request, 'myapplication/failedLogin.html', {})	
+	return render(request, 'myapplication/failedLogin.html', {})
+
+def create_report(request):
+	if request.method == 'POST':
+	# 	# create a form instance and populate it with data from the request:
+	# 	#form = ReportForm(request.POST)
+		form = ReportForm(request.POST)
+	# 	# check whether it's valid:
+		if form.is_valid():
+	# 		# process the data in form.cleaned_data as required
+			print("Valid form")
+		return HttpResponseRedirect('member_home_page')
+	# # if a GET (or any other method) we'll create a blank form
+	else:
+		form = ReportForm()
+	return render(request, 'myapplication/createReport.html', {'form': form})	
