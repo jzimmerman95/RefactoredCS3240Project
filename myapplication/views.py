@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from .forms import UserSignUpForm, ReportForm
-from .models import UserInformation
+from .models import UserInformation, Report, ReportFiles, ReportGroups
+# for authentication
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 # imports for encrytion
 from Crypto.PublicKey import RSA
 from Crypto import Random
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 def home_page(request):
@@ -62,15 +64,50 @@ def failed_login(request):
 
 def create_report(request):
 	if request.method == 'POST':
-	# 	# create a form instance and populate it with data from the request:
-	# 	#form = ReportForm(request.POST)
 		form = ReportForm(request.POST)
-	# 	# check whether it's valid:
 		if form.is_valid():
-	# 		# process the data in form.cleaned_data as required
-			print("Valid form")
-		return HttpResponseRedirect('member_home_page')
+			# create a report object
+			reportname = request.POST.get('reportname')
+			summary = request.POST.get('summary')
+			desc = request.POST.get('description')
+			containsEncrypted = request.POST.get('containsencrypted')
+			isprivate = request.POST.get('isprivate')
+			# use session variables 
+			# owner = request.session.get('username')
+			owner = "dummy"
+
+			try:
+				r = Report.objects.get(reportname=reportname)
+				# A report with that name already exists - send the form back to user with an error
+				form = ReportForm(request.POST)
+				form.add_error('reportname', "A report with that name already exists: please try a different name")
+				return render(request, 'myapplication/createReport.html', {'form': form})
+			except ObjectDoesNotExist:
+				report_obj = Report(reportname=reportname, owner=owner, summary=summary, description=desc, containsencrypted=containsEncrypted, isprivate=isprivate)
+				report_obj.save()
+				
+				# store all files associated with that report in the file database
+				for key in request.POST:
+					if key == "uploadfile" or ("extra" in str(key)):
+						uploadfile=request.POST.get(key)
+						report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
+						report_file_obj.save()	
+
+				# store all groups associated with that (private) report in the file database
+				if isprivate == "private":
+					groups = request.POST.get('groups')
+					if groups != "":
+						groups = groups.split(',')
+						for group in groups:
+							group_obj = ReportGroups(reportname=reportname, groupname=group.strip())
+							group_obj.save()
+				
+				return HttpResponseRedirect('member_home_page')				
 	# # if a GET (or any other method) we'll create a blank form
 	else:
 		form = ReportForm()
-	return render(request, 'myapplication/createReport.html', {'form': form})	
+	return render(request, 'myapplication/createReport.html', {'form': form})
+
+# def view_reports(request):
+# 	query_results = Report.objects.all()
+# 	return render(request, 'myapplication/viewReports.html', {})

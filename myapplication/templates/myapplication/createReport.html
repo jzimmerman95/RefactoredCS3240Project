@@ -26,25 +26,26 @@
 	</style>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="text/javascript">
-		var form_count = $("[extra_field_count]");
+		form_count = $("[extra_field_count]");
 		// get extra form count so we know what index to use for the next item.
 		function addFileSubmit() {
-		    element = $('{{ form.uploadfile }}<br>');
+		    element = $('<br>{{ form.uploadfile }}');
 		    element.attr('name', 'extra_field_' + form_count);
-		    element.insertBefore(".buttonFormat1");
-		    //$("#forms").append(element);
-		    // build element and append it to our forms container
+		    element.appendTo(".files")
+		    //element.insertBefore(".buttonFormat1");
 
 		    form_count++;
 		    $("[name=extra_field_count]").val(form_count);
-		    // increment form count so our view knows to populate 
-		    // that many fields for validation
 		}
 		
 	</script>
-	<form id="submitForm" action="create_report" method="POST">
-		<div id="forms">
+	<h3>Create a report:</h3>
+	<div id="forms">
+		<form id="submitForm" action="create_report" method="POST">
 			{% csrf_token %}
+			<div>
+				{{ form.errors }}
+			</div>
 			<div class="largefields">
 				<label for="reportname">Report Name: </label>
 		 		{{ form.reportname }}
@@ -57,20 +58,31 @@
 				<label for="description">Report Description: </label><br>
 		    	{{ form.description }}
 			</div>
-			<label for="containsencrypted">Are you uploading encrypted files?</label><br>
+			<br>
+			<label for="containsencrypted">Are you attaching encrypted files?</label><br>
 			<div class="smallfields">
-				<label for="containsencrypted">Yes</label>
 				{{ form.containsencrypted }}
 			</div>
+			<br>
+			<label for="isprivate">Is the report public or private?</label><br>
+			<div class="smallfields">
+				{{ form.isprivate }}
+			</div>
+			<br>
+			<label for="groups">If the report is private, please list the names of groups with which you would like to share the report, separated by commas:</label>
 			<div>
+				{{ form.groups }}
+			</div>
+			<br>
+			<div class="files">
 				<label for="uploadfile">Add a file</label><br>
 				{{ form.uploadfile }}
 			</div>
 			<div class="buttonFormat1">
 				<input type="submit" value="Submit Form">
 			</div>
-		</div>
-	</form>
+		</form>
+	</div>
 	<div class="buttonFormat2">
 		<button id="add-another" onclick="addFileSubmit()">Add another file</button>
 	</div>
