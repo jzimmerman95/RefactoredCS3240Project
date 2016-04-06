@@ -10,6 +10,8 @@ from django.contrib.auth import authenticate
 from Crypto.PublicKey import RSA
 from Crypto import Random
 from django.core.exceptions import ObjectDoesNotExist
+# to pass session variables to a template
+from django.template import RequestContext
 
 
 # Create your views here.
@@ -76,7 +78,8 @@ def create_report(request):
 			isprivate = request.POST.get('isprivate')
 			# use session variables 
 			# owner = request.session.get('username')
-			owner = "dummy"
+			# SET DUMMY SESSION VARIABLE
+			owner = "username1"
 
 			try:
 				r = Report.objects.get(reportname=reportname)
@@ -110,7 +113,17 @@ def create_report(request):
 	return render(request, 'myapplication/createReport.html', {'form': form})
 
 def view_reports(request):
-	# f = ReportFiles.objects.get(reportname="name8")
-	# response = HttpResponse(FileWrapper(f.uploadfile), content_type="image/jpg")
+	# f = ReportFiles.objects.get(reportname="report1")
+	# response = HttpResponse(FileWrapper(f.uploadfile), content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 	# return response
-	return render(request, 'myapplication/viewReports.html', {'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all()})
+	# SET DUMMY SESSION VARIABLE
+	request.session['firstname'] = "Colleen"
+	request.session['username'] = "username1"
+	return render(request, 'myapplication/viewReports.html', {'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all()}, context_instance=RequestContext(request))	
+
+
+
+
+
+
+

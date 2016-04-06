@@ -7,22 +7,33 @@
 			color: navy;
 		}
 	</style>
-	<table>
+	<h3>Welcome, {{ request.session.firstname }}. Your reports are displayed below.</h3>
+	<table border="1" style="width:100%">
 		<tr>
 			<th>Report Name</th>
+			<th>Summary</th>
+			<th>Description</th>
+			<th>Does Report Contain Encrypted Files?</th>
 			<th>Public/Private</th>
 			<th>File(s)</th>
 		</tr>
 		{% for report in reports %}
-		<tr> 
-			<td>{{ report.reportname }}</td>
-			<td>{{ report.isprivate }}</td>
-			{% for r in reportfiles %}
-				{% ifequal report.reportname r.reportname %}
-					<td>{{ r.uploadfile.name }}</td>
-				{% endifequal %}
-			{% endfor %}
-		</tr>
+			{% ifequal report.owner request.session.username %}
+				<tr> 
+					<td>{{ report.reportname }}</td>
+					<td>{{ report.summary }}</td>
+					<td>{{ report.description }}</td>
+					<td>{{ report.containsencrypted }}</td>
+					<td>{{ report.isprivate }}</td>
+					<td>
+						{% for r in reportfiles %}
+							{% ifequal report.reportname r.reportname %}
+								{{ r.uploadfile.name }}
+							{% endifequal %}
+						{% endfor %}
+					</td>
+				</tr>
+			{% endifequal %}
 		{% endfor %}
 	</table>
 </html>
