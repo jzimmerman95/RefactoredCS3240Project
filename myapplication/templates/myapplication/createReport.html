@@ -1,7 +1,12 @@
 <html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 	<style type="text/css">
 		body {
 	    	background-color: lightblue;
+	    	margin-left: 1em;
 		}
 		h3 {
 			color: navy;
@@ -16,14 +21,18 @@
 		}
 		div.buttonFormat1 {
 			float: left;
-			width: 10%;
-			margin-top: 16px;
+			margin-right: 10px;
+			margin-top: 16.5px;
+			margin-left: 0.5em;
 		}
 		div.buttonFormat2 {
 			float:left;
-			width: 10%;
+			margin-top: 3px;
+			margin-right: 10px;
 		}
 	</style>
+</head>
+<body>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="text/javascript">
 		form_count = $("[extra_field_count]");
@@ -78,11 +87,15 @@
 				{{ form.uploadfile }}
 			</div>
 			<div class="buttonFormat1">
-				<input type="submit" value="Submit Form">
+				<input class="btn btn-primary btn-lg" type="submit" value="Create Report">
 			</div>
 		</form>
 	</div>
 	<div class="buttonFormat2">
-		<button id="add-another" onclick="addFileSubmit()">Add another file</button>
+		<button class="btn btn-primary btn-lg" id="add-another" onclick="addFileSubmit()">Add another file</button>
 	</div>
+	<div class="buttonFormat2">
+		<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+	</div>
+</body>
 </html>

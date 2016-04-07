@@ -40,3 +40,9 @@ class ReportForm(forms.Form):
 			self.fields['extra_field_{index}'.format(index=index)] = \
 				forms.CharField()
 
+class RenameReportForm(forms.Form):
+	oldreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control'}))
+	newreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control'}))
+
+
+
