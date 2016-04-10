@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, RenameReportForm
+from .forms import UserSignUpForm, ReportForm, RenameReportForm, RenameReportForm2
 from .models import UserInformation, Report, ReportFiles, ReportGroups
 # for authentication
 from django.contrib.auth.models import User
@@ -103,6 +103,11 @@ def create_report(request):
 					if groups != "":
 						groups = groups.split(',')
 						for group in groups:
+							# TODO: IMPLEMENT CHECKS FOR WHETHER OR NOT GROUPS EXIST
+							# try: 
+							# 	g = Groups.objects.get(groupname=group)
+							# except ObjectDoesNotExist:
+							# 	pass or alert somehow?
 							group_obj = ReportGroups(reportname=reportname, groupname=group.strip())
 							group_obj.save()
 				
@@ -113,62 +118,67 @@ def create_report(request):
 	return render(request, 'myapplication/createReport.html', {'form': form})
 
 def view_reports(request):
-	# SET DUMMY SESSION VARIABLE
-	request.session['firstname'] = "Colleen"
-	request.session['username'] = "username1"
-	return render(request, 'myapplication/viewReports.html', {'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all()}, context_instance=RequestContext(request))	
+	if request.method == 'POST':
+		form = RenameReportForm2(request.POST)
+		if form.is_valid():
+			newreportname = request.POST.get('newreportname')
+			oldreportname = request.POST.get('oldreportname')
+			r = Report.objects.get(reportname=oldreportname)
+			r.reportname = newreportname
+			r.save()
+			try: 
+				r2 = ReportFiles.objects.filter(reportname=oldreportname)
+				for rep in r2:
+					rep.reportname = newreportname
+					rep.save()
+			except ObjectDoesNotExist:
+				pass
+			try:
+				r3 = ReportGroups.objects.filter(reportname=oldreportname)
+				for rep in r3:
+					rep.reportname = newreportname
+					rep.save()
+			except ObjectDoesNotExist:
+				pass
+			HttpResponseRedirect('view_reports')
+		else:
+			HttpResponseRedirect('home_page')
+	else:
+		pass 
+	form = RenameReportForm2()
+	reportNames = []
+	for report in Report.objects.all():
+		reportNames.append(report.reportname)
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+def delete_report(request):
+	if request.method == "POST":
+		reportToDelete = request.POST.get('deleteReport')
+		inst = Report.objects.get(reportname=reportToDelete)
+		inst.delete()
+		try:
+			r_files = ReportFiles.objects.filter(reportname=reportToDelete)
+			for rep in r_files:
+				rep.delete()
+		except ObjectDoesNotExist:
+			pass
+		try: 
+			r_groups = ReportGroups.objects.filter(reportname=reportToDelete)
+			for rep in r_groups:
+				rep.delete()
+		except ObjectDoesNotExist:
+			pass
+		HttpResponseRedirect('view_reports')
+	else: 
+		pass 
+	form = RenameReportForm2()
+	reportNames = []
+	for report in Report.objects.all():
+		reportNames.append(report.reportname)
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def manage_reports(request):
-	if request.method == 'POST':
-		form = RenameReportForm(request.POST)
-		if form.is_valid():
-			# handle form data - rename the report if possible
-			oldreportname=request.POST.get('oldreportname')
-			newreportname=request.POST.get('newreportname')
-			try:
-				# see if the report exists
-				report = Report.objects.get(reportname=oldreportname)
-				# check that a report with the proposed new name does not already exist
-				try:
-					# report with new proposed name already exists
-					reportNameCheck = Report.objects.get(reportname=newreportname)
-					form = RenameReportForm(request.POST)
-					form.add_error('newreportname', "A report with that name already exists - please enter a different new report name")
-					return render(request, 'myapplication/manageReports.html', {'form': form, 'comp': '', 'show': 'show'})
-				except ObjectDoesNotExist:
-					# there is no error and report may be renamed
-					# change the report's name
-					report.reportname = newreportname
-					report.save()
-					# if the report has files, change the name for each associated file
-					try: 
-						reportFile = ReportFiles.objects.filter(reportname=oldreportname)
-						for r in reportFile:
-							r.reportname = newreportname
-							r.save()
-					# otherwise continue
-					except ObjectDoesNotExist:
-						pass
-					# if the report has groups, change the name for each associated group 
-					try: 
-						reportGroup = ReportGroups.objects.filter(reportname=oldreportname)
-						for r in reportGroup:
-							r.reportname = newreportname
-							r.save()
-					# otherwise continue
-					except ObjectDoesNotExist:
-						pass
-			except ObjectDoesNotExist:
-				# if report does not exist, pop up an error somehow
-				form = RenameReportForm(request.POST)
-				form.add_error('oldreportname', "A report with that name does not exist - please enter a valid report name")
-				return render(request, 'myapplication/manageReports.html', {'form': form, 'comp': '', 'show': 'show'})
-			form = RenameReportForm()
-			complete = "The name of " + oldreportname + " has been changed to " + newreportname
-			return render(request, 'myapplication/manageReports.html', {'form': form, 'comp': complete, 'show': ''})
-	else:
-		form = RenameReportForm()
-	return render(request, 'myapplication/manageReports.html', {'form': form, 'comp': '', 'show': ''})
+	return render(request, 'myapplication/manageReports.html', {})
 
 
 

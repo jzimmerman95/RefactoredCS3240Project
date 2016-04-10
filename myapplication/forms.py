@@ -44,5 +44,9 @@ class RenameReportForm(forms.Form):
 	oldreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control'}))
 	newreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control'}))
 
+class RenameReportForm2(forms.Form):
+	newreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'id':'newreportname'}))
+
+
 
 
