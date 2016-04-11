@@ -4,25 +4,11 @@
 integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 	<script type="text/javascript">
-		// var r_list = "{{reports}}";
-		// var newName = document.getElementById('newreportname').value;
-		// function validateNewName() {
-		// 	alert("hello");
-		// 	// loop through the existing reports to see if any have the same name as the new name
-		// 	for (int i = 0; i < r_list.length; i++) {
-		// 		if (r_list[i].reportname == newName) {
-		// 			return false;
-		// 		}
-		// 	}
-		// 	return true;
-		// }
-	</script>
-	<script type="text/javascript">
 		$(document).ready(function(){
 
-		$('#renameForm').submit(function(){
+		$('#modifyForm').submit(function(){
 			var RLIST = {{ reportNames|safe }};
-			var newName = document.getElementById('newreportname').value;
+			var newName = document.getElementById('reportnameid').value;
 
 			for (i = 0; i < RLIST.length; i++) {
 				if (RLIST[i] == newName) {
@@ -35,7 +21,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		    	.attr("name", "oldreportname")
 		    	.attr("value", ID)
 		    	.attr("type", "hidden")
-		    	.appendTo("#renameForm");
+		    	.appendTo("#modifyForm");
 			return true;
 		});
 
@@ -53,7 +39,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		    	.appendTo("#deleteForm");
 			return true;
 		});
-	});
+		});
 	</script>
 	<script type="text/javascript">
 		var ID;
@@ -78,36 +64,43 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 <body>
 	<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
 	<div>
-		<table class="table table-striped">
+		<table class="table table-striped" id="reportTable">
 			<tr>
 				<th>Report Name</th>
 				<th>Summary</th>
 				<th>Description</th>
 				<th>Does Report Contain Encrypted Files?</th>
 				<th>Public/Private</th>
+				<th>Group(s)</th>
 				<th>File(s)</th>
 				<th></th>
 			</tr>
 			{% for report in reports %}
 				{% ifequal report.owner request.session.username %}
 					<tr> 
-						<td>
-							<div>{{report.reportname}}</div>
-							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#myModal" style="font-size:8pt; margin-top: 7px;">Rename</button>
+						<td class="rName">{{report.reportname}}</td>
+						<td class="rSum">{{ report.summary }}</td>
+						<td class="rDesc">{{ report.description }}</td>
+						<td class="rEnc">{{ report.containsencrypted }}</td>
+						<td class="rIsPrivate">{{ report.isprivate }}</td>
+						<td class="rGroups">
+							{% for r in reportgroups %}
+								{% ifequal report.reportname r.reportname %}
+									{{ r.groupname }}
+								{% endifequal %}
+							{% endfor %}
 						</td>
-						<td>{{ report.summary }}</td>
-						<td>{{ report.description }}</td>
-						<td>{{ report.containsencrypted }}</td>
-						<td>{{ report.isprivate }}</td>
-						<td>
+						<td class="rFiles">
 							{% for r in reportfiles %}
 								{% ifequal report.reportname r.reportname %}
-									{{ r.uploadfile.name }}
+									{{ r.uploadfile }}
 								{% endifequal %}
 							{% endfor %}
 						</td>
 						<td>
-							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#myDeleteModal" style="font-size:8pt; margin-top: 7px;">Delete</button>
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
 						</td>
 					</tr>
 				{% endifequal %}
@@ -119,22 +112,54 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	</div>
 
 	<!-- modal to show when process is complete -->
-	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	<div class="modal fade" id="editReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-						<h3 class="modal-title" id="myModalLabel">Edit Report Name</h3>
+						<h3 class="modal-title" id="myModalLabel">Modify Report</h3>
 					</div>
-					<form id="renameForm" method="POST" action="view_reports">
+					<form id="modifyForm" method="POST" action="view_reports">
 						{% csrf_token %}
 						<div class="form-group">
-							<label for="newreportname">New Report Name: </label>
-							<p style="color: red;">{{ form.newreportname.errors|striptags }}</p>
-							{{ form.newreportname }}
+							<div>
+								<label for="newreportname">Report Name: </label>
+								<p style="color: red;">{{ form.reportname.errors|striptags }}</p>
+								{{ form.reportname }}
+							</div>
+							<div>
+								<label for="summary">Report Summary: </label>
+								<p style="color: red;">{{ form.summary.errors|striptags }}</p>
+								{{ form.summary }}
+							</div>
+							<div>
+								<label for="description">Report Description: </label>
+								<p style="color: red;">{{ form.description.errors|striptags }}</p>
+								{{ form.description }}
+							</div>
+							<div>
+								<label for="containsencrypted">Does the report contain encrypted files? </label>
+								<p style="color: red;">{{ form.containsencrypted.errors|striptags }}</p>
+								{{ form.containsencrypted }}
+							</div>
+							<div>
+								<label for="isprivate">Is the report public or private? </label>
+								<p style="color: red;">{{ form.isprivate.errors|striptags }}</p>
+								{{ form.isprivate }}
+							</div>
+							<!-- <div>
+								<label for="groups">If the report is private, please list the names of groups with which you would like to share the report, separated by commas:</label>
+								<p style="color: red;">{{ form.groups.errors|striptags }}</p>
+								{{ form.groups }}
+							</div> -->
+							<!-- <div>
+								<label for="uploadfile">Would you like to add a file to the report? </label>
+								<p style="color: red;">{{ form.uploadfile.errors|striptags }}</p>
+								{{ form.uploadfile }}
+							</div> -->
 						</div>
-						<button type="submit" class="btn btn-default" onclick="modal">Change Report Name</button>
+						<button type="submit" class="btn btn-default" onclick="modal">Modify Report</button>
 					</form>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -144,7 +169,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		</div>
 	</div>
 
-	<div class="modal fade" id="myDeleteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	<div class="modal fade" id="deleteReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
@@ -164,7 +189,88 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			</div>
 		</div>
 	</div>
+	<div class="modal fade" id="editFiles" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Edit Files</h3>
+					</div>
+					<form id="addFiles" method="POST" action="">
+						{% csrf_token %}
+						<h4>Add files to the report: </h4>
+						<div>
+							<label for="uploadfile">Add or Remove Files </label>
+							<p style="color: red;">{{ fileForm.uploadfile.errors|striptags }}</p>
+							{{ fileForm.uploadfile }}
+						</div>
+						<button type="submit" class="btn btn-default" onclick="modal">Edit Files</button>
+					</form>
+					<div>
+						<button class="btn btn-primary btn-lg" id="add-another" onclick="addFileSubmit()">Add another file</button>
+					</div>
+					<form id="removeFiles" method="POST" action="">
+						{% csrf_token %}
+						<h4>Remove files from the report</h4>
+						<div>
+							<label for="uploadfile">Add or Remove Files </label>
+							<p style="color: red;">{{ fileForm.filestoremove.errors|striptags }}</p>
+							{{ fileForm.filestoremove }}
+						</div>
+						<button type="submit" class="btn btn-default" onclick="modal">Edit Files</button>
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		// $(".buttonEditFiles").click(function() {
+		// 	var rFiles = $(this).closest("tr").find(".rFiles").text();
+		// 	rFiles = rFiles.trim();
+		// 	rFiles = rFiles.split(/\t+/);
+		// 	var rFilesList = [];
+		// 	for (i=0; i<rFiles.length;i++) {
+		// 		rFiles[i] = rFiles[i].trim('\n');
+		// 		if (rFiles[i].length > 0) {
+		// 			rFilesList.push(rFiles[i]);
+		// 		}
+		// 	}
+		// 	alert(rFilesList);
+		// 	document.getElementById('uploadfileid').files = rFilesList[0];
+		// 	//alert(rFiles);
+		// });
+	</script>
+	<script type="text/javascript">
+		form_count = $("[extra_field_count]");
+		// get extra form count so we know what index to use for the next item.
+		function addFileSubmit() {
+		    element = $('<br>{{ form.uploadfile }}');
+		    element.attr('name', 'extra_field_' + form_count);
+		    element.appendTo(".files")
 
+		    form_count++;
+		    $("[name=extra_field_count]").val(form_count);
+		}
+		
+	</script>
+	<script type="text/javascript">
+		$(".buttonModifyReport").click(function() {
+		    var rName = $(this).closest("tr").find(".rName").text();
+		    var rSum = $(this).closest("tr").find(".rSum").text();
+		    var rDesc = $(this).closest("tr").find(".rDesc").text();
+		    var rEnc = $(this).closest("tr").find(".rEnc").text();
+		    var rIsPrivate = $(this).closest("tr").find(".rIsPrivate").text();
+		    document.getElementById('reportnameid').value = rName;
+		    document.getElementById('summaryid').value = rSum;
+		    document.getElementById('descriptionid').value = rDesc;
+		    document.getElementById('containsencryptedid').value = rEnc;
+		    document.getElementById('isprivateid').value = rIsPrivate;
+		});
+	</script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 

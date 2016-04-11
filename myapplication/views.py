@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, RenameReportForm, RenameReportForm2
+from .forms import UserSignUpForm, ReportForm, EditFileForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups
 # for authentication
 from django.contrib.auth.models import User
@@ -119,24 +119,35 @@ def create_report(request):
 
 def view_reports(request):
 	if request.method == 'POST':
-		form = RenameReportForm2(request.POST)
+		#form = RenameReportForm(request.POST)
+		form = ReportForm(request.POST)
 		if form.is_valid():
-			newreportname = request.POST.get('newreportname')
+			#newreportname = request.POST.get('newreportname')
 			oldreportname = request.POST.get('oldreportname')
+			reportname = request.POST.get('reportname')
+			summary = request.POST.get('summary')
+			desc = request.POST.get('description')
+			containsEncrypted = request.POST.get('containsencrypted')
+			isprivate = request.POST.get('isprivate')
+
 			r = Report.objects.get(reportname=oldreportname)
-			r.reportname = newreportname
+			r.reportname = reportname
+			r.summary = summary
+			r.description = description
+			r.containsEncrypted = containsEncrypted
+			r.isprivate = isprivate
 			r.save()
 			try: 
 				r2 = ReportFiles.objects.filter(reportname=oldreportname)
 				for rep in r2:
-					rep.reportname = newreportname
+					rep.reportname = reportname
 					rep.save()
 			except ObjectDoesNotExist:
 				pass
 			try:
 				r3 = ReportGroups.objects.filter(reportname=oldreportname)
 				for rep in r3:
-					rep.reportname = newreportname
+					rep.reportname = reportname
 					rep.save()
 			except ObjectDoesNotExist:
 				pass
@@ -145,11 +156,13 @@ def view_reports(request):
 			HttpResponseRedirect('home_page')
 	else:
 		pass 
-	form = RenameReportForm2()
+	# form = RenameReportForm()
+	form = ReportForm()
+	fileForm = EditFileForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm,'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def delete_report(request):
 	if request.method == "POST":
@@ -171,11 +184,11 @@ def delete_report(request):
 		HttpResponseRedirect('view_reports')
 	else: 
 		pass 
-	form = RenameReportForm2()
+	form = ReportForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def manage_reports(request):
 	return render(request, 'myapplication/manageReports.html', {})
