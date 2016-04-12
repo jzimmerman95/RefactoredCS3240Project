@@ -42,6 +42,34 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		});
 	</script>
 	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#addFiles').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "fileeditreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#addFiles");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#removeFiles').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "fileeditreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#removeFiles");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
 		var ID;
 		function getId(id) {
 			ID = id;
@@ -148,16 +176,6 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 								<p style="color: red;">{{ form.isprivate.errors|striptags }}</p>
 								{{ form.isprivate }}
 							</div>
-							<!-- <div>
-								<label for="groups">If the report is private, please list the names of groups with which you would like to share the report, separated by commas:</label>
-								<p style="color: red;">{{ form.groups.errors|striptags }}</p>
-								{{ form.groups }}
-							</div> -->
-							<!-- <div>
-								<label for="uploadfile">Would you like to add a file to the report? </label>
-								<p style="color: red;">{{ form.uploadfile.errors|striptags }}</p>
-								{{ form.uploadfile }}
-							</div> -->
 						</div>
 						<button type="submit" class="btn btn-default" onclick="modal">Modify Report</button>
 					</form>
@@ -197,29 +215,34 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						<h3 class="modal-title" id="myModalLabel">Edit Files</h3>
 					</div>
-					<form id="addFiles" method="POST" action="">
-						{% csrf_token %}
-						<h4>Add files to the report: </h4>
+					<div class="modal-body">
+						<form id="addFiles" method="POST" action="add_files" enctype="multipart/form-data">
+							{% csrf_token %}
+							<h4>Add files to the report: </h4>
+							<div style="margin-bottom: 10px;">
+								<p style="color: red;">{{ fileForm.uploadfile.errors|striptags }}</p>
+								<div class="files">
+									{{ fileForm.uploadfile }}
+								</div>
+							</div>
+							<button type="submit" class="btn btn-default" onclick="modal">Edit Files</button>
+						</form>
 						<div>
-							<label for="uploadfile">Add or Remove Files </label>
-							<p style="color: red;">{{ fileForm.uploadfile.errors|striptags }}</p>
-							{{ fileForm.uploadfile }}
+							<button class="button" id="add-another" onclick="addFileSubmit()">Add another file</button>
 						</div>
-						<button type="submit" class="btn btn-default" onclick="modal">Edit Files</button>
-					</form>
-					<div>
-						<button class="btn btn-primary btn-lg" id="add-another" onclick="addFileSubmit()">Add another file</button>
 					</div>
-					<form id="removeFiles" method="POST" action="">
-						{% csrf_token %}
-						<h4>Remove files from the report</h4>
-						<div>
-							<label for="uploadfile">Add or Remove Files </label>
-							<p style="color: red;">{{ fileForm.filestoremove.errors|striptags }}</p>
-							{{ fileForm.filestoremove }}
-						</div>
-						<button type="submit" class="btn btn-default" onclick="modal">Edit Files</button>
-					</form>
+					<div class="modal-body">
+						<form id="removeFiles" method="POST" action="remove_files">
+							{% csrf_token %}
+							<h4>Remove files from the report: </h4>
+							<div>
+								<label for="filestoremove">Please type the name(s) of the file(s) you would like to remove, separated by commas: </label>
+								<p style="color: red;">{{ fileForm.filestoremove.errors|striptags }}</p>
+								{{ fileForm.filestoremove }}
+							</div>
+							<button type="submit" class="btn btn-default" onclick="modal">Edit Files</button>
+						</form>
+					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 					</div>
@@ -228,27 +251,19 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		</div>
 	</div>
 	<script type="text/javascript">
-		// $(".buttonEditFiles").click(function() {
-		// 	var rFiles = $(this).closest("tr").find(".rFiles").text();
-		// 	rFiles = rFiles.trim();
-		// 	rFiles = rFiles.split(/\t+/);
-		// 	var rFilesList = [];
-		// 	for (i=0; i<rFiles.length;i++) {
-		// 		rFiles[i] = rFiles[i].trim('\n');
-		// 		if (rFiles[i].length > 0) {
-		// 			rFilesList.push(rFiles[i]);
-		// 		}
-		// 	}
-		// 	alert(rFilesList);
-		// 	document.getElementById('uploadfileid').files = rFilesList[0];
-		// 	//alert(rFiles);
-		// });
+		var SHOW = "{{ show }}";
+		$(document).ready(function(){
+		    // Show the Modal on load
+		    if (SHOW != "") { 
+		    	$("#editFiles").modal("show");
+		    }
+		});
 	</script>
 	<script type="text/javascript">
 		form_count = $("[extra_field_count]");
 		// get extra form count so we know what index to use for the next item.
 		function addFileSubmit() {
-		    element = $('<br>{{ form.uploadfile }}');
+		    element = $('<br>{{ fileForm.uploadfile }}');
 		    element.attr('name', 'extra_field_' + form_count);
 		    element.appendTo(".files")
 

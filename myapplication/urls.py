@@ -13,4 +13,6 @@ urlpatterns = [
     url(r'^view_reports$', views.view_reports, name='view_reports'),
     url(r'^manage_reports$', views.manage_reports, name="manage_reports"),
     url(r'^delete_report$', views.delete_report, name="delete_report"),
+    url(r'^add_files$', views.add_files, name="add_files"),
+    url(r'^remove_files$', views.remove_files, name="remove_files"),
 ]

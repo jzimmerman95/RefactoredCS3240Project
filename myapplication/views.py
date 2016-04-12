@@ -185,10 +185,63 @@ def delete_report(request):
 	else: 
 		pass 
 	form = ReportForm()
+	fileForm = EditFileForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+def add_files(request):
+	if request.method == "POST":
+		fileForm = EditFileForm(request.POST, request.FILES)
+		if fileForm.is_valid():
+			# get the report name
+			reportname = request.POST.get('fileeditreportname')
+			# store all files associated with that report in the file database
+			for filename in request.FILES:
+				uploadfile=request.FILES[filename]
+				report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
+				report_file_obj.save()
+	else: 
+		pass
+	form = ReportForm()
+	fileForm = EditFileForm()
+	reportNames = []
+	for report in Report.objects.all():
+		reportNames.append(report.reportname)
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+def remove_files(request):
+	if request.method == "POST":
+		fileForm = EditFileForm(request.POST, request.FILES)
+		if fileForm.is_valid():
+			reportname = request.POST.get('fileeditreportname')
+			filestoremove = request.POST.get('filestoremove').split(',')
+			filesWithErrors = []
+			for f in filestoremove:
+				try: 
+					fileObj = ReportFiles.objects.get(uploadfile=f.strip())
+					fileObj.delete()
+				except ObjectDoesNotExist:
+					filesWithErrors.append(f)
+			if len(filesWithErrors) > 0:
+				# there were invalid file names
+				form = ReportForm()
+				fileForm = EditFileForm(request.POST)
+				fileForm.add_error('filestoremove', "There was at least one invalid file name")
+				reportNames = []
+				for report in Report.objects.all():
+					reportNames.append(report.reportname)
+				return render(request, 'myapplication/viewReports.html', {'show': "show",'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	else: 
+		pass
+	form = ReportForm()
+	fileForm = EditFileForm()
+	reportNames = []
+	for report in Report.objects.all():
+		reportNames.append(report.reportname)
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
 
 def manage_reports(request):
 	return render(request, 'myapplication/manageReports.html', {})

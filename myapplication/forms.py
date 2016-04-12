@@ -50,6 +50,8 @@ class EditFileForm(forms.Form):
 		super(EditFileForm, self).__init__(*args, **kwargs)
 		self.fields['extra_field_count'].initial = extra_fields
 		self.fields['uploadfile'].required = False
+		self.fields['filestoremove'].required = False
+		self.fields['extra_field_count'].required = False
 		for index in range(int(extra_fields)):
 			# generate extra fields in the number specified via extra_fields
 			self.fields['extra_field_{index}'.format(index=index)] = \
