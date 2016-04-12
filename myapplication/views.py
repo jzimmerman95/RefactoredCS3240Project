@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups
 # for authentication
 from django.contrib.auth.models import User
@@ -76,7 +76,7 @@ def create_report(request):
 			desc = request.POST.get('description')
 			containsEncrypted = request.POST.get('containsencrypted')
 			isprivate = request.POST.get('isprivate')
-			# use session variables 
+			# TODO: get session variables 
 			# owner = request.session.get('username')
 			# SET DUMMY SESSION VARIABLE
 			owner = "username1"
@@ -159,10 +159,11 @@ def view_reports(request):
 	# form = RenameReportForm()
 	form = ReportForm()
 	fileForm = EditFileForm()
+	groupForm = EditGroupForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm,'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def delete_report(request):
 	if request.method == "POST":
@@ -186,10 +187,11 @@ def delete_report(request):
 		pass 
 	form = ReportForm()
 	fileForm = EditFileForm()
+	groupForm = EditGroupForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def add_files(request):
 	if request.method == "POST":
@@ -206,10 +208,11 @@ def add_files(request):
 		pass
 	form = ReportForm()
 	fileForm = EditFileForm()
+	groupForm = EditGroupForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def remove_files(request):
 	if request.method == "POST":
@@ -228,19 +231,45 @@ def remove_files(request):
 				# there were invalid file names
 				form = ReportForm()
 				fileForm = EditFileForm(request.POST)
+				groupForm = EditGroupForm()
 				fileForm.add_error('filestoremove', "There was at least one invalid file name")
 				reportNames = []
 				for report in Report.objects.all():
 					reportNames.append(report.reportname)
-				return render(request, 'myapplication/viewReports.html', {'show': "show",'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+				return render(request, 'myapplication/viewReports.html', {'show': "show",'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else: 
 		pass
 	form = ReportForm()
 	fileForm = EditFileForm()
+	groupForm = EditGroupForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+def edit_groups(request):
+	if request.method == "POST":
+		groupForm = EditGroupForm(request.POST)
+		if groupForm.is_valid():
+			reportname = request.POST.get('editgroupsreportname')
+			groupstoadd = request.POST.get('groupstoadd').split(',')
+			groupstoremove = request.POST.get('groupstoremove').split(',')
+			# TODO: get session variables 
+			# owner = request.session.get('username')
+			# SET DUMMY SESSION VAR
+			owner = "username1"
+			# TODO: check that groups to add the report to a) exist and b) are owned by this owner
+			# TODO: check that groups to remove the report from a) contain the report now
+			pass
+	else:
+		pass
+	form = ReportForm()
+	fileForm = EditFileForm()
+	groupForm = EditGroupForm()
+	reportNames = []
+	for report in Report.objects.all():
+		reportNames.append(report.reportname)
+	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 
 def manage_reports(request):
