@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import UserInformation
+from .models import UserInformation, Folders
 from django.contrib.auth.models import User
 
 class UserSignUpForm(ModelForm):
@@ -61,14 +61,12 @@ class EditGroupForm(forms.Form):
 	groupstoadd = forms.CharField(widget=forms.TextInput(attrs={'id':'groupstoaddid'}))
 	groupstoremove = forms.CharField(widget=forms.TextInput(attrs={'id':'groupstoremoveid'}))
 
-# class RenameReportForm(forms.Form):
-# 	oldreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control'}))
-# 	newreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control'}))
+class CreateFolderForm(ModelForm):
+	class Meta:
+		model = Folders
+		fields = ('foldername', )
 
-# class RenameReportForm(forms.Form):
-# 	newreportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'id':'newreportname'}))
-
-
-
-
+	def __init__(self, *args, **kwargs):
+		super(CreateFolderForm, self).__init__(*args, **kwargs)
+		self.fields['foldername'].widget.attrs.update({'id': 'foldernameid'})
 

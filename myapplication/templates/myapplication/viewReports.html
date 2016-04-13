@@ -7,15 +7,17 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		$(document).ready(function(){
 
 		$('#modifyForm').submit(function(){
-			var RLIST = {{ reportNames|safe }};
-			var newName = document.getElementById('reportnameid').value;
+			if ($("#modifyForm").data("changed")) {
+				var RLIST = {{ reportNames|safe }};
+				var newName = document.getElementById('reportnameid').value;
 
-			for (i = 0; i < RLIST.length; i++) {
-				if (RLIST[i] == newName) {
-					alert("A report with that name already exists. Please enter a different name.");
-					return false;
+				for (i = 0; i < RLIST.length; i++) {
+					if (RLIST[i] == newName) {
+						alert("A report with that name already exists. Please enter a different name.");
+						return false;
+					}
 				}
-			}
+			} 
 			$("<input type='text' value='' />")
 		    	.attr("id", ID)
 		    	.attr("name", "oldreportname")
@@ -93,7 +95,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		body {
 	    	background-color: lightblue;
 		}
-		h3 {
+		h3,h4 {
 			color: navy;
 			margin-left: 1em;
 		}
@@ -104,11 +106,15 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	</style>
 </head>
 <body>
-	<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
+	{% ifnotequal folderName None%}
+		<h3>{{ request.session.firstname }}, your reports from {{folderName}} are displayed below.</h3>
+	{% else %}
+		<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
+	{% endifnotequal %}
 	<div>
 		<table class="table table-striped" id="reportTable">
 			<tr>
-				<th>Report Name</th>
+				<th onclick="return f();">Report Name</th>
 				<th>Summary</th>
 				<th>Description</th>
 				<th>Contains Encrypted Files?</th>
@@ -191,6 +197,9 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 								<p style="color: red;">{{ form.isprivate.errors|striptags }}</p>
 								{{ form.isprivate }}
 							</div>
+							<div>
+								<input type="hidden" name="foldername" value="{{folderName}}">
+							</div>
 						</div>
 						<button type="submit" class="btn btn-default" onclick="modal">Modify Report</button>
 					</form>
@@ -213,6 +222,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						{% csrf_token %}
 						<h4>Are you sure you would like to delete this report?</h4>
 						<button type="submit" class="btn btn-default" onclick="modal">Delete Report</button>
+						<input type="hidden" name="foldername" value="{{folderName}}">
 					</form>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -241,6 +251,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 											{{ fileForm.uploadfile }}
 										</div>
 									</div>
+									<input type="hidden" name="foldername" value="{{folderName}}">
 									<button type="submit" class="btn btn-default" onclick="modal">Add Files</button>
 								</form>
 							</div>
@@ -259,6 +270,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 									<p style="color: red;">{{ fileForm.filestoremove.errors|striptags }}</p>
 									{{ fileForm.filestoremove }}
 									<br>
+									<input type="hidden" name="foldername" value="{{folderName}}">
 									<button style="margin-top:10px;" type="submit" class="btn btn-default" onclick="modal">Remove Files</button>
 								</div>
 							</form>
@@ -291,6 +303,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 								<br>
 								{{ groupForm.groupstoremove }}
 								<br>
+								<input type="hidden" name="foldername" value="{{folderName}}">
 								<button style="margin-top:10px;" type="submit" class="btn btn-default" onclick="modal">Edit Groups</button>
 							</form>
 						</div>
@@ -337,6 +350,11 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		    document.getElementById('containsencryptedid').value = rEnc;
 		    document.getElementById('isprivateid').value = rIsPrivate;
 		});
+	</script>
+	<script type="text/javascript">
+		function f(){
+			alert("{{reports}}");
+		}
 	</script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 

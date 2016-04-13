@@ -11,8 +11,10 @@ urlpatterns = [
     url(r'^failed_login$', views.failed_login, name='failed_login'),
     url(r'^create_report$', views.create_report, name='create_report'),
     url(r'^view_reports$', views.view_reports, name='view_reports'),
+    url(r'^view_reports_folder', views.view_reports_folder, name="view_reports_folder"),
     url(r'^manage_reports$', views.manage_reports, name="manage_reports"),
     url(r'^delete_report$', views.delete_report, name="delete_report"),
     url(r'^add_files$', views.add_files, name="add_files"),
     url(r'^remove_files$', views.remove_files, name="remove_files"),
+    url(r'^create_folder$', views.create_folder, name="create_folder"),
 ]

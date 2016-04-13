@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm
-from .models import UserInformation, Report, ReportFiles, ReportGroups
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm
+from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders
 # for authentication
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -35,7 +35,7 @@ def sign_user_up(request):
 			key = RSA.generate(1024, random_generator)
 			publicKey = key.publickey()
 			# insert the user into the  model you created, including the generated public key
-			user_inf_obj = UserInformation(username = username, password = pwd, email = email, firstname = fname, lastname = lname, publickey = publicKey)
+			user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey)
 			user_inf_obj.save()
 			# create and save a user object for authentication
 			user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
@@ -118,6 +118,9 @@ def create_report(request):
 	return render(request, 'myapplication/createReport.html', {'form': form})
 
 def view_reports(request):
+	# SETTING DUMMY SESSION VARIABLES
+	request.session['username'] = "username1"
+	request.session['firstname'] = "Colleen"
 	if request.method == 'POST':
 		#form = RenameReportForm(request.POST)
 		form = ReportForm(request.POST)
@@ -133,7 +136,7 @@ def view_reports(request):
 			r = Report.objects.get(reportname=oldreportname)
 			r.reportname = reportname
 			r.summary = summary
-			r.description = description
+			r.description = desc
 			r.containsEncrypted = containsEncrypted
 			r.isprivate = isprivate
 			r.save()
@@ -151,6 +154,7 @@ def view_reports(request):
 					rep.save()
 			except ObjectDoesNotExist:
 				pass
+			# TODO: MODIFY REPORT NAME IN FOLDER(S) IF NECESSARY
 			HttpResponseRedirect('view_reports')
 		else:
 			HttpResponseRedirect('home_page')
@@ -160,10 +164,29 @@ def view_reports(request):
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+
+	reports = []
+	if request.POST.get('foldername') != None:
+		f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+		if len(f.reports) > 0:
+			l = f.reports.split(',')
+			for r in l:
+				reports.append(Report.objects.get(reportname=r.strip()))
+	else: 
+		reports = Report.objects.all()
+
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+def view_reports_folder(request):
+	form = CreateFolderForm()
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReportsFolder.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 
 def delete_report(request):
 	if request.method == "POST":
@@ -182,16 +205,28 @@ def delete_report(request):
 				rep.delete()
 		except ObjectDoesNotExist:
 			pass
+		# TODO: DELETE REPORT FROM FOLDER(S) IF NECESSARY
 		HttpResponseRedirect('view_reports')
 	else: 
 		pass 
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+
+	reports = []
+	if request.POST.get('foldername') != None:
+		f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+		if len(f.reports) > 0:
+			l = f.reports.split(',')
+			for r in l:
+				reports.append(Report.objects.get(reportname=r.strip()))
+	else: 
+		reports = Report.objects.all()
+
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	return render(request, 'myapplication/viewReports.html', {'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def add_files(request):
 	if request.method == "POST":
@@ -275,6 +310,25 @@ def edit_groups(request):
 def manage_reports(request):
 	return render(request, 'myapplication/manageReports.html', {})
 
+def create_folder(request):
+	if request.method == "POST":
+		form = CreateFolderForm(request.POST)
+		if form.is_valid():
+			# TODO: get session username to 
+			# username = request.session.get('username')
+			# for now, dummy variable 
+			username = "username1"
+			foldername = request.POST.get('foldername')
+			folder_obj = Folders(foldername=foldername, owner=username)
+			folder_obj.save()
+	else:
+		pass
+	form = CreateFolderForm()
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReportsFolder.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 
 
 

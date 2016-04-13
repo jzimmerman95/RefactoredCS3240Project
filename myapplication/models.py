@@ -1,9 +1,10 @@
 from django.db import models
 from django.utils import timezone
+import json
 
 class UserInformation(models.Model):
 	username = models.CharField(max_length=200, default='none')
-	password = models.CharField(max_length=200, default='none')
+	# password = models.CharField(max_length=200, default='none')
 	email = models.EmailField(max_length=200, default='none')
 	firstname = models.CharField(max_length=200, default='none')
 	lastname = models.CharField(max_length=200, default='none')
@@ -35,3 +36,14 @@ class ReportFiles(models.Model):
 class ReportGroups(models.Model):
 	reportname = models.CharField(max_length=100)
 	groupname = models.CharField(max_length=200)
+
+class Folders(models.Model):
+	foldername = models.CharField(max_length=100)
+	owner = models.CharField(max_length=200, default='none')
+	reports = models.CharField(max_length=255) # must check if this works
+
+	def setreports(self, x):
+		self.reports = json.dumps(x)
+
+	def getreports(self, x):
+		return json.loads(self.reports)
