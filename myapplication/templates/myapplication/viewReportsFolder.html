@@ -32,6 +32,9 @@
 					{% csrf_token %}
 					<input type="hidden" name="foldername" value="{{folder.foldername}}">
 					<button type="submit" class="list-group-item">{{folder.foldername}}</button>
+					<!-- <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Delete</button>
+					<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Rename</button>
+					<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Add Reports</button> -->
 				</form>
 			{% endifequal %}
 		{% endfor %}
@@ -40,8 +43,12 @@
 		<div class="buttons">
 			<button id="createFolderButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createFolder">Create A New Folder</button>
 		</div>
+		<!-- TODO: MOVE ABILITY TO ADD REPORTS TO A FOLDER INTO THE FOLDER PAGE ITSELF -->
 		<div class="buttons">
 			<button id="addReportsButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addReports">Add Reports To A Folder</button>
+		</div>
+		<div class="buttons">
+			<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
 		</div>
 	</div>
 	<div class="modal fade" id="createFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
@@ -53,11 +60,16 @@
 				</div>
 				<div class="modal-body">
 					<div class="form-group">
-						<form id="createFolderForm" method="POST" action="create_folder">
+						<form id="createFolderForm" method="POST" action="create_folder"> <!-- action="create_folder" -->
 							{% csrf_token %}
 							<div>
-								<label for="foldername">Folder Name: </label>
+								<label for="foldername">Folder Name: </label><br>
 								{{ form.foldername }}
+							</div>
+							<div>
+								<label for="reports">Please enter the names of the report(s) to put in the folder, separated by commas: </label>
+								<p style="color: red;">{{ form.reports.errors|striptags }}</p>
+								{{ form.reports }}
 							</div>
 							<div style="margin-top:30px;">
 								<button type="submit" class="btn btn-default" onclick="modal">Create Folder</button>
@@ -80,8 +92,18 @@
 				</div>
 				<div class="modal-body">
 					<div class="form-group">
-						<form id="createFolderForm" method="POST" action="create_folder">
+						<form id="createFolderForm" method="POST" action="add_reports_folder">
 							{% csrf_token %}
+							<div>
+								<label for="foldername">Folder Name: </label><br>
+								<p style="color: red;">{{ form.foldername.errors|striptags }}</p>
+								{{ form.foldername }}
+							</div>
+							<div>
+								<label for="reports">Please enter the names of the report(s) to put in the folder, separated by commas: </label>
+								<p style="color: red;">{{ form.reports.errors|striptags }}</p>
+								{{ form.reports }}
+							</div>
 							<div style="margin-top:30px;">
 								<button type="submit" class="btn btn-default" onclick="modal">Add Reports</button>
 							</div>
@@ -94,6 +116,19 @@
 			</div>
 		</div>
 	</div>
+	<script type="text/javascript">
+		var SHOW = "{{ show }}";
+		var SHOW2 = "{{ show2 }}";
+		$(document).ready(function(){
+		    // Show the Modal on load
+		    if (SHOW != "") { 
+		    	$("#createFolder").modal("show");
+		    }
+		    if (SHOW2 != "") {
+		    	$("#addReports").modal("show");
+		    }
+		});
+	</script>
 	<script type="text/javascript">
 		$(document).ready(function(){
 			$('#createFolderForm').submit(function(){

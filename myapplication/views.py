@@ -154,7 +154,16 @@ def view_reports(request):
 					rep.save()
 			except ObjectDoesNotExist:
 				pass
-			# TODO: MODIFY REPORT NAME IN FOLDER(S) IF NECESSARY
+			# Modify report name in folder(s) if necessary
+			for folder in Folders.objects.all():
+				reportList = folder.reports.split(',')
+				for r in reportList:
+					if r.strip() == oldreportname:
+						reportList.remove(r)
+						reportList.append(reportname)
+						folder.reports = ",".join(str(x) for x in reportList)
+						folder.save()
+
 			HttpResponseRedirect('view_reports')
 		else:
 			HttpResponseRedirect('home_page')
@@ -171,7 +180,8 @@ def view_reports(request):
 		if len(f.reports) > 0:
 			l = f.reports.split(',')
 			for r in l:
-				reports.append(Report.objects.get(reportname=r.strip()))
+				if r.strip() != '':
+					reports.append(Report.objects.get(reportname=r.strip()))
 	else: 
 		reports = Report.objects.all()
 
@@ -205,7 +215,14 @@ def delete_report(request):
 				rep.delete()
 		except ObjectDoesNotExist:
 			pass
-		# TODO: DELETE REPORT FROM FOLDER(S) IF NECESSARY
+		# delete report from folder(s) if necessary
+		for folder in Folders.objects.all():
+				reportList = folder.reports.split(',')
+				for r in reportList:
+					if r.strip() == reportToDelete:
+						reportList.remove(r)
+						folder.reports = ",".join(str(x) for x in reportList)
+						folder.save()
 		HttpResponseRedirect('view_reports')
 	else: 
 		pass 
@@ -214,7 +231,7 @@ def delete_report(request):
 	groupForm = EditGroupForm()
 
 	reports = []
-	if request.POST.get('foldername') != None:
+	if request.POST.get('foldername') != 'None':
 		f = Folders.objects.get(foldername=(request.POST.get('foldername')))
 		if len(f.reports) > 0:
 			l = f.reports.split(',')
@@ -319,8 +336,30 @@ def create_folder(request):
 			# for now, dummy variable 
 			username = "username1"
 			foldername = request.POST.get('foldername')
-			folder_obj = Folders(foldername=foldername, owner=username)
-			folder_obj.save()
+			reports = request.POST.get('reports')
+			reportList = reports.split(',')
+			error = False
+			for r in reportList:
+				try:
+					rep = Report.objects.get(reportname=r.strip())
+					if rep.owner != username:
+						# the existing report does not belong to the user - send form back with error
+						error = True
+				except ObjectDoesNotExist:
+					# at least one report does not exist - send form back with error 
+					error = True
+			if error == False:
+				# you can make the folder with reports
+				folder_obj = Folders(foldername=foldername, reports=reports, owner=username)
+				folder_obj.save()
+			else:
+				#form = CreateFolderForm()
+				form.add_error('reports', "At least one report does not belong to you or does not exist. Please enter valid report names.")
+				folderInfo = []
+				for folder in Folders.objects.all():
+					tup = [folder.foldername, folder.owner]
+					folderInfo.append(tup)
+				return render(request, 'myapplication/viewReportsFolder.html', {'show':'show', 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 	else:
 		pass
 	form = CreateFolderForm()
@@ -330,8 +369,98 @@ def create_folder(request):
 		folderInfo.append(tup)
 	return render(request, 'myapplication/viewReportsFolder.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 
+def add_reports_folder(request):
+	if request.method == "POST":
+		form = CreateFolderForm(request.POST)
+		if form.is_valid():
+			# TODO: get session username to 
+			# username = request.session.get('username')
+			# for now, dummy variable 
+			username = "username1"
+			foldername = request.POST.get('foldername')
+			reports = request.POST.get('reports')
+			reportsToAddList = reports.split(',')
+			errorFolder = False
+			errorReports = False
+			# validate folder existence and owner
+			try: 
+				f = Folders.objects.get(foldername=foldername)
+				if f.owner != username:
+					errorFolder = True
+			except ObjectDoesNotExist:
+				errorFolder = True
+			# validate report existence and owner
+			for r in reportsToAddList:
+				try:
+					rep = Report.objects.get(reportname=r.strip())
+					if rep.owner != username:
+						# the existing report does not belong to the user - send form back with error
+						errorReports = True
+				except ObjectDoesNotExist:
+					# at least one report does not exist - send form back with error 
+					errorReports = True
+			if errorFolder == False and errorReports == False:
+				# you can add those reports to the folder's reports
+				f = Folders.objects.get(foldername=foldername)
+				existingReportsList = f.reports.split(',')
+				for r in reportsToAddList:
+					if r.strip() not in existingReportsList:
+						existingReportsList.append(r)
+				f.reports = ",".join(str(x) for x in existingReportsList)
+				f.save()	
+			else:
+				if errorReports == True:
+					form.add_error('reports', "At least one report does not belong to you or does not exist. Please enter valid report names.")
+				if errorFolder == True:
+					form.add_error('foldername', "The folder does not exist or does not belong to you. Please enter a valid folder name.")
+				folderInfo = []
+				for folder in Folders.objects.all():
+					tup = [folder.foldername, folder.owner]
+					folderInfo.append(tup)
+				return render(request, 'myapplication/viewReportsFolder.html', {'show2':'show2', 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+	else:
+		pass
+	form = CreateFolderForm()
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReportsFolder.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 
+def remove_report_folder(request):
+	if request.method == "POST":
+		reportToDelete = request.POST.get('deleteReport')
+		folderName = request.POST.get('foldername')
+		f = Folders.objects.get(foldername=folderName)
+		reportsList = f.reports.split(',')
+		for r in reportsList:
+			if r.strip() == reportToDelete:
+				reportsList.remove(r)
+		# reportsList.remove(reportToDelete.strip())
+		f.reports = ",".join(str(x) for x in reportsList)
+		f.save()
+		HttpResponseRedirect('view_reports')
+	else: 
+		pass 
+	form = ReportForm()
+	fileForm = EditFileForm()
+	groupForm = EditGroupForm()
 
+	reports = []
+	if request.POST.get('foldername') != 'None':
+		f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+		if len(f.reports) > 0:
+			l = f.reports.split(',')
+			for r in l:
+				if r.strip() != '': 
+					reports.append(Report.objects.get(reportname=r.strip()))
+	else: 
+		reports = Report.objects.all()
+
+	reportNames = []
+	for report in Report.objects.all():
+		reportNames.append(report.reportname)
+	return render(request, 'myapplication/viewReports.html', {'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 
 

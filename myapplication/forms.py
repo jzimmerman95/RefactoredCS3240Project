@@ -64,9 +64,11 @@ class EditGroupForm(forms.Form):
 class CreateFolderForm(ModelForm):
 	class Meta:
 		model = Folders
-		fields = ('foldername', )
+		fields = ('foldername', 'reports', )
 
 	def __init__(self, *args, **kwargs):
 		super(CreateFolderForm, self).__init__(*args, **kwargs)
 		self.fields['foldername'].widget.attrs.update({'id': 'foldernameid'})
+		self.fields['reports'].widget.attrs.update({'id': 'reportsid'})
+		self.fields['reports'].required = False
 

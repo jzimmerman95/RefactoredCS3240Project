@@ -46,6 +46,20 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	<script type="text/javascript">
 		$(document).ready(function(){
 
+		$('#removeReportForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "deleteReport")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#removeReportForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
 		$('#addFiles').submit(function(){
 			$("<input type='text' value='' />")
 		    	.attr("id", ID)
@@ -147,9 +161,12 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						</td>
 						<td>
 							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
+							{% ifnotequal folderName None %}
+								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
+							{% endifnotequal %}
 							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
 							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
-							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editGroups" style="font-size:5pt; margin-top: 7px;">Edit Groups</button>
+							<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editGroups" style="font-size:5pt; margin-top: 7px;">Edit Groups</button> -->
 						</td>
 					</tr>
 				{% endifequal %}
@@ -158,6 +175,9 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	</div>
 	<div class="buttons">
 		<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+	</div>
+	<div class="buttons">
+		<a class="btn btn-primary btn-lg" href="view_reports_folders">Return to My Folders</a>
 	</div>
 
 	<!-- modal to show when process is complete -->
@@ -231,6 +251,27 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			</div>
 		</div>
 	</div>
+	<div class="modal fade" id="deleteReportFromFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Remove Report From Folder</h3>
+					</div>
+					<form id="removeReportForm" method="POST" action="remove_report_folder">
+						{% csrf_token %}
+						<h4>Are you sure you would like to remove this report from {{folderName}}?</h4>
+						<button type="submit" class="btn btn-default" onclick="modal">Remove Report</button>
+						<input type="hidden" name="foldername" value="{{folderName}}">
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div class="modal fade" id="editFiles" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
@@ -283,7 +324,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="editGroups" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	<!-- <div class="modal fade" id="editGroups" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
@@ -314,7 +355,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 	<script type="text/javascript">
 		var SHOW = "{{ show }}";
 		$(document).ready(function(){

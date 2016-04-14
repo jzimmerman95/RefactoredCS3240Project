@@ -17,4 +17,6 @@ urlpatterns = [
     url(r'^add_files$', views.add_files, name="add_files"),
     url(r'^remove_files$', views.remove_files, name="remove_files"),
     url(r'^create_folder$', views.create_folder, name="create_folder"),
+    url(r'^add_reports_folder$', views.add_reports_folder, name="add_reports_folder"),
+    url(r'^remove_report_folder$', views.remove_report_folder, name="remove_report_folder"),
 ]
