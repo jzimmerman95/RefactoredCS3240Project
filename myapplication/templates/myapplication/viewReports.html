@@ -23,7 +23,11 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 </head>
 <body>
 	{% ifnotequal folderName None%}
-		<h3>{{ request.session.firstname }}, your reports from {{folderName}} are displayed below.</h3>
+		{%ifnotequal folderName 'None'%}
+			<h3>{{ request.session.firstname }}, your reports from {{folderName}} are displayed below.</h3>
+		{% else %}
+			<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
+		{%endifnotequal%}
 	{% else %}
 		<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
 	{% endifnotequal %}
@@ -64,7 +68,10 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<td>
 							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
 							{% ifnotequal folderName None %}
-								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
+								{%ifnotequal folderName 'None'%}
+									<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
+								{%endifnotequal%}
+								<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button> -->
 							{% endifnotequal %}
 							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
 							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
@@ -82,9 +89,11 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		<a class="btn btn-primary btn-lg" href="view_reports_folders">Return to My Folders</a>
 	</div>
 	{%ifnotequal folderName None%}
-		<div class="buttons">
-			<button id="addReportsButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addReports">Add Reports To {{folderName}}</button>
-		</div>
+		{%ifnotequal folderName 'None'%}
+			<div class="buttons">
+				<button id="addReportsButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addReports">Add Reports To {{folderName}}</button>
+			</div>
+		{%endifnotequal%}
 	{%endifnotequal%}
 
 	<!-- modal to show when process is complete -->
@@ -336,9 +345,9 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		});
 	</script>
 	<script type="text/javascript">
-		function f(){
-			alert("{{reports}}");
-		}
+		// function f(){
+		// 	alert("{{reports}}");
+		// }
 	</script>
 	<script type="text/javascript">
 		$(document).ready(function(){

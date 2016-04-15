@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders
 # for authentication
 from django.contrib.auth.models import User
@@ -202,11 +202,62 @@ def view_reports(request):
 
 def view_reports_folder(request):
 	form = CreateFolderForm()
+	renameForm = RenameFolderForm()
 	folderInfo = []
 	for folder in Folders.objects.all():
 		tup = [folder.foldername, folder.owner]
 		folderInfo.append(tup)
-	return render(request, 'myapplication/viewReportsFolder.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+	return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+
+def rename_folder(request):
+	if request.method == 'POST':
+		renameForm = RenameFolderForm(request.POST)
+		if renameForm.is_valid():
+			newfoldername = request.POST.get('newfoldername')
+			oldfoldername = request.POST.get('foldertorename')
+			folderError = False
+			# check that the new folder name does not exist
+			for f in Folders.objects.all():
+				if f.foldername == newfoldername:
+					folderError = True
+			if folderError == True:
+				# return with error
+				form = CreateFolderForm()
+				# renameForm = RenameFolderForm()
+				renameForm.add_error('newfoldername', 'A folder with that name already exists. Please choose a different folder name.')
+				folderInfo = []
+				for folder in Folders.objects.all():
+					tup = [folder.foldername, folder.owner]
+					folderInfo.append(tup)
+				return render(request, 'myapplication/viewReportsFolder.html', {'showRenameForm': 'showRenameForm', 'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+
+			else: 
+				# update folder name
+				fol = Folders.objects.get(foldername=oldfoldername)
+				fol.foldername = newfoldername
+				fol.save()
+	else: 
+		pass
+	form = CreateFolderForm()
+	renameForm = RenameFolderForm()
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+
+def delete_folder(request):
+	if request.method=="POST":
+		foldertodelete = request.POST.get('foldertodelete')
+		f = Folders.objects.get(foldername=foldertodelete)
+		f.delete()
+	form = CreateFolderForm()
+	renameForm = RenameFolderForm()
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 
 def delete_report(request):
 	if request.method == "POST":
@@ -233,7 +284,7 @@ def delete_report(request):
 						reportList.remove(r)
 						folder.reports = ",".join(str(x) for x in reportList)
 						folder.save()
-		HttpResponseRedirect('view_reports')
+		# HttpResponseRedirect('view_reports')
 	else: 
 		pass 
 	form = ReportForm()

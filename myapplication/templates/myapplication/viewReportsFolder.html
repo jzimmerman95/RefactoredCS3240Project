@@ -17,6 +17,13 @@
 			margin-bottom: 5em;
 			margin-top: 1em;
 		}
+		.folderButtons {
+			display: inline-block;
+			width: 25%;
+		}
+		.folderGroup {
+			margin-bottom: 1em;
+		}
 		
 	</style>
 </head>
@@ -31,14 +38,18 @@
 		{% for folder in folders %}
 			{% ifequal folder.owner request.session.username %}
 				<!-- <a href="manage_reports" class="list-group-item">{{ folder.foldername }}</a> -->
-				<form method="POST" action="view_reports">
-					{% csrf_token %}
-					<input type="hidden" name="foldername" value="{{folder.foldername}}">
-					<button type="submit" class="list-group-item">{{folder.foldername}}</button>
-					<!-- <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Delete</button>
-					<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Rename</button>
-					<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Add Reports</button> -->
-				</form>
+				<div class="folderGroup">
+					<form method="POST" action="view_reports">
+						{% csrf_token %}
+						<input type="hidden" name="foldername" value="{{folder.foldername}}">
+						<button type="submit" class="list-group-item">{{folder.foldername}}</button>
+						<!-- <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Delete</button>
+						<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Rename</button>
+						<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="">Add Reports</button> -->
+					</form>
+					<button onclick="return getId(this.id);" id="{{folder.foldername}}_rename" style="font-size:8pt; width:25%;" class="list-group-item" data-toggle="modal" data-target="#renameFolder">Rename {{folder.foldername}}</button>
+					<button onclick="return getId(this.id);" id="{{folder.foldername}}_delete" style="font-size:8pt; width:25%;" class="list-group-item" data-toggle="modal" data-target="#deleteFolder">Delete {{folder.foldername}}</button>
+				</div>
 			{% endifequal %}
 		{% endfor %}
 	</div>
@@ -72,6 +83,58 @@
 							</div>
 							<div style="margin-top:30px;">
 								<button type="submit" class="btn btn-default" onclick="modal">Create Folder</button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="renameFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h3 class="modal-title" id="myModalLabel">Rename Folder</h3>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<form id="renameFolderSubmitForm" method="POST" action="rename_folder"> 
+							{% csrf_token %}
+							<div>
+								<label for="newfoldername">New Folder Name: </label><br>
+								<p style="color: red;">{{ renameForm.newfoldername.errors|striptags }}</p>
+								{{renameForm.newfoldername}}
+							</div>
+							<div style="margin-top:30px;">
+								<button type="submit" class="btn btn-default" onclick="modal">Rename Folder</button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="deleteFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h3 class="modal-title" id="myModalLabel">Rename Folder</h3>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<form id="deleteFolderSubmitForm" method="POST" action="delete_folder"> 
+							{% csrf_token %}
+							<div>
+								<p>Are you sure you want to delete this folder?</p><br>
+								<button type="submit" class="btn btn-default" onclick="modal">Delete Folder</button>
 							</div>
 						</form>
 					</div>
@@ -117,15 +180,19 @@
 	</div> -->
 	<script type="text/javascript">
 		var SHOW = "{{ show }}";
-		var SHOW2 = "{{ show2 }}";
+		// var SHOW2 = "{{ show2 }}";
+		var showRenameForm = "{{showRenameForm}}";
 		$(document).ready(function(){
 		    // Show the Modal on load
 		    if (SHOW != "") { 
 		    	$("#createFolder").modal("show");
 		    }
-		    if (SHOW2 != "") {
-		    	$("#addReports").modal("show");
+		    if (showRenameForm != "") {
+		    	$('#renameFolder').modal("show");
 		    }
+		    // if (SHOW2 != "") {
+		    // 	$("#addReports").modal("show");
+		    // }
 		});
 	</script>
 	<script type="text/javascript">
@@ -143,6 +210,40 @@
 				return true;
 			});
 		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#renameFolderSubmitForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "foldertorename")
+		    	.attr("value", ID.replace("_rename", ""))
+		    	.attr("type", "hidden")
+		    	.appendTo("#renameFolderSubmitForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#deleteFolderSubmitForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "foldertodelete")
+		    	.attr("value", ID.replace("_delete", ""))
+		    	.attr("type", "hidden")
+		    	.appendTo("#deleteFolderSubmitForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		var ID;
+		function getId(id) {
+			ID = id;
+		}
 	</script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script> 
 </body>

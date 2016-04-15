@@ -71,3 +71,6 @@ class CreateFolderForm(ModelForm):
 		self.fields['foldername'].widget.attrs.update({'id': 'foldernameid'})
 		self.fields['reports'].widget.attrs.update({'id': 'reportsid'})
 		self.fields['reports'].required = False
+
+class RenameFolderForm(forms.Form):
+	newfoldername=forms.CharField(max_length=100)
