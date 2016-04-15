@@ -22,7 +22,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	</style>
 </head>
 <body>
-	{% ifnotequal folderName "None"%}
+	{% ifnotequal folderName None%}
 		<h3>{{ request.session.firstname }}, your reports from {{folderName}} are displayed below.</h3>
 	{% else %}
 		<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
