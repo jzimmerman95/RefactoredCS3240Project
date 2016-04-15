@@ -587,22 +587,5 @@ def remove_report_folder(request):
 		folderInfo.append(tup)
 	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
-def logout(request):
-    
-    user = getattr(request, 'user', None)
-    if hasattr(user, 'is_authenticated') and not user.is_authenticated:
-        user = None
-    user_logged_out.send(sender=user.__class__, request=request, user=user)
 
-    language = request.session.get(LANGUAGE_SESSION_KEY)
 
-    request.session.flush()
-
-    if language is not None:
-        request.session[LANGUAGE_SESSION_KEY] = language
-
-    if hasattr(request, 'user'):
-        from django.contrib.auth.models import AnonymousUser
-        request.user = AnonymousUser()
-
-    return render(request, 'myapplication/signIn.html')
