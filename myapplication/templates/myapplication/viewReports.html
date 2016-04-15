@@ -1,0 +1,449 @@
+<html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	
+	<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		h3,h4 {
+			color: navy;
+			margin-left: 1em;
+		}
+		.buttons {
+			display: inline-block;
+			width: 25%;
+			margin-left: 2em;
+			margin-bottom: 5em;
+			margin-top: 1em;
+		}
+	</style>
+</head>
+<body>
+	{% ifnotequal folderName "None"%}
+		<h3>{{ request.session.firstname }}, your reports from {{folderName}} are displayed below.</h3>
+	{% else %}
+		<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
+	{% endifnotequal %}
+	<div>
+		<table class="table table-striped" id="reportTable">
+			<tr>
+				<th onclick="return f();">Report Name</th>
+				<th>Summary</th>
+				<th>Description</th>
+				<th>Contains Encrypted Files?</th>
+				<th>Public/Private</th>
+				<th>Group(s)</th>
+				<th>File(s)</th>
+				<th></th>
+			</tr>
+			{% for report in reports %}
+				{% ifequal report.owner request.session.username %}
+					<tr> 
+						<td class="rName">{{report.reportname}}</td>
+						<td class="rSum">{{ report.summary }}</td>
+						<td class="rDesc">{{ report.description }}</td>
+						<td class="rEnc">{{ report.containsencrypted }}</td>
+						<td class="rIsPrivate">{{ report.isprivate }}</td>
+						<td class="rGroups">
+							{% for r in reportgroups %}
+								{% ifequal report.reportname r.reportname %}
+									{{ r.groupname }}
+								{% endifequal %}
+							{% endfor %}
+						</td>
+						<td class="rFiles">
+							{% for r in reportfiles %}
+								{% ifequal report.reportname r.reportname %}
+									{{ r.uploadfile }}
+								{% endifequal %}
+							{% endfor %}
+						</td>
+						<td>
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
+							{% ifnotequal folderName None %}
+								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
+							{% endifnotequal %}
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
+							<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editGroups" style="font-size:5pt; margin-top: 7px;">Edit Groups</button> -->
+						</td>
+					</tr>
+				{% endifequal %}
+			{% endfor %}
+		</table>
+	</div>
+	<div class="buttons">
+		<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+	</div>
+	<div class="buttons">
+		<a class="btn btn-primary btn-lg" href="view_reports_folders">Return to My Folders</a>
+	</div>
+	{%ifnotequal folderName None%}
+		<div class="buttons">
+			<button id="addReportsButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addReports">Add Reports To {{folderName}}</button>
+		</div>
+	{%endifnotequal%}
+
+	<!-- modal to show when process is complete -->
+	<div class="modal fade" id="editReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Modify Report</h3>
+					</div>
+					<form id="modifyForm" method="POST" action="view_reports">
+						{% csrf_token %}
+						<div class="form-group">
+							<div>
+								<label for="newreportname">Report Name: </label>
+								<p style="color: red;">{{ form.reportname.errors|striptags }}</p>
+								{{ form.reportname }}
+							</div>
+							<div>
+								<label for="summary">Report Summary: </label>
+								<p style="color: red;">{{ form.summary.errors|striptags }}</p>
+								{{ form.summary }}
+							</div>
+							<div>
+								<label for="description">Report Description: </label>
+								<p style="color: red;">{{ form.description.errors|striptags }}</p>
+								{{ form.description }}
+							</div>
+							<div>
+								<label for="containsencrypted">Does the report contain encrypted files? </label>
+								<p style="color: red;">{{ form.containsencrypted.errors|striptags }}</p>
+								{{ form.containsencrypted }}
+							</div>
+							<div>
+								<label for="isprivate">Is the report public or private? </label>
+								<p style="color: red;">{{ form.isprivate.errors|striptags }}</p>
+								{{ form.isprivate }}
+							</div>
+							<div>
+								<input type="hidden" name="foldername" value="{{folderName}}">
+							</div>
+						</div>
+						<button type="submit" class="btn btn-default" onclick="modal">Modify Report</button>
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="deleteReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Delete Report</h3>
+					</div>
+					<form id="deleteForm" method="POST" action="delete_report">
+						{% csrf_token %}
+						<h4>Are you sure you would like to delete this report?</h4>
+						<button type="submit" class="btn btn-default" onclick="modal">Delete Report</button>
+						<input type="hidden" name="foldername" value="{{folderName}}">
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="deleteReportFromFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Remove Report From Folder</h3>
+					</div>
+					<form id="removeReportForm" method="POST" action="remove_report_folder">
+						{% csrf_token %}
+						<h4>Are you sure you would like to remove this report from {{folderName}}?</h4>
+						<button type="submit" class="btn btn-default" onclick="modal">Remove Report</button>
+						<input type="hidden" name="foldername" value="{{folderName}}">
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="editFiles" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Edit Files</h3>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<div>
+								<form id="addFiles" method="POST" action="add_files" enctype="multipart/form-data">
+									{% csrf_token %}
+									<h4>Add files to the report: </h4>
+									<div style="margin-bottom: 10px;">
+										<p style="color: red;">{{ fileForm.uploadfile.errors|striptags }}</p>
+										<div class="files">
+											{{ fileForm.uploadfile }}
+										</div>
+									</div>
+									<input type="hidden" name="foldername" value="{{folderName}}">
+									<button type="submit" class="btn btn-default" onclick="modal">Add Files</button>
+								</form>
+							</div>
+							<div>
+								<button id="add-another" class="btn btn-default" onclick="addFileSubmit()">Add another file</button>
+							</div>
+						</div>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<form id="removeFiles" method="POST" action="remove_files">
+								{% csrf_token %}
+								<h4>Remove files from the report: </h4>
+								<div>
+									<label for="filestoremove">Please type the name(s) of the file(s) you would like to remove, separated by commas: </label>
+									<p style="color: red;">{{ fileForm.filestoremove.errors|striptags }}</p>
+									{{ fileForm.filestoremove }}
+									<br>
+									<input type="hidden" name="foldername" value="{{folderName}}">
+									<button style="margin-top:10px;" type="submit" class="btn btn-default" onclick="modal">Remove Files</button>
+								</div>
+							</form>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 	Modal to add reports to the folder  -->
+	<div class="modal fade" id="addReports" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h3 class="modal-title" id="myModalLabel">Add Reports to {{folderName}}</h3>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<form id="createFolderForm" method="POST" action="add_reports_folder">
+							{% csrf_token %}
+							<div>
+								<input type="hidden" name="foldername" value="{{folderName}}">
+							</div>
+							<div>
+								<label for="reports">Please enter the names of the report(s) to put in the folder, separated by commas: </label>
+								<p style="color: red;">{{ createFolderForm.reports.errors|striptags }}</p>
+								{{ createFolderForm.reports }}
+							</div>
+							<div style="margin-top:30px;">
+								<button type="submit" class="btn btn-default" onclick="modal">Add Reports</button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- <div class="modal fade" id="editGroups" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Edit Groups</h3>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<form id="editGroupsForm" method="POST" action="edit_groups">
+								{% csrf_token %}
+								<label for="">Please enter the names of group(s) to share this report with, separated by commas: </label>
+								<br>
+								{{ groupForm.groupstoadd }}
+								<br>
+								<label for="">Please enter the names of group(s) that this report should no longer be shared with, separated by commas: </label>
+								<br>
+								{{ groupForm.groupstoremove }}
+								<br>
+								<input type="hidden" name="foldername" value="{{folderName}}">
+								<button style="margin-top:10px;" type="submit" class="btn btn-default" onclick="modal">Edit Groups</button>
+							</form>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div> -->
+	<script type="text/javascript">
+		var SHOW = "{{ show }}";
+		var SHOW2 = "{{show2}}";
+		$(document).ready(function(){
+		    // Show the Modal on load
+		    if (SHOW != "") { 
+		    	$("#editFiles").modal("show");
+		    }
+		    if (SHOW2 != "") {
+		    	$("#addReports").modal("show");
+		    }
+		});
+	</script>
+	<script type="text/javascript">
+		form_count = $("[extra_field_count]");
+		// get extra form count so we know what index to use for the next item.
+		function addFileSubmit() {
+		    element = $('<br>{{ fileForm.uploadfile }}');
+		    element.attr('name', 'extra_field_' + form_count);
+		    element.appendTo(".files")
+
+		    form_count++;
+		    $("[name=extra_field_count]").val(form_count);
+		}
+		
+	</script>
+	<script type="text/javascript">
+		$(".buttonModifyReport").click(function() {
+		    var rName = $(this).closest("tr").find(".rName").text();
+		    var rSum = $(this).closest("tr").find(".rSum").text();
+		    var rDesc = $(this).closest("tr").find(".rDesc").text();
+		    var rEnc = $(this).closest("tr").find(".rEnc").text();
+		    var rIsPrivate = $(this).closest("tr").find(".rIsPrivate").text();
+		    document.getElementById('reportnameid').value = rName;
+		    document.getElementById('summaryid').value = rSum;
+		    document.getElementById('descriptionid').value = rDesc;
+		    document.getElementById('containsencryptedid').value = rEnc;
+		    document.getElementById('isprivateid').value = rIsPrivate;
+		});
+	</script>
+	<script type="text/javascript">
+		function f(){
+			alert("{{reports}}");
+		}
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#modifyForm').submit(function(){
+			if ($("#modifyForm").data("changed")) {
+				var RLIST = {{ reportNames|safe }};
+				var newName = document.getElementById('reportnameid').value;
+
+				for (i = 0; i < RLIST.length; i++) {
+					if (RLIST[i] == newName) {
+						alert("A report with that name already exists. Please enter a different name.");
+						return false;
+					}
+				}
+			} 
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "oldreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#modifyForm");
+			return true;
+		});
+
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#deleteForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "deleteReport")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#deleteForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#removeReportForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "deleteReport")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#removeReportForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#addFiles').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "fileeditreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#addFiles");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#removeFiles').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "fileeditreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#removeFiles");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#editGroupsForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "editgroupsreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#editGroupsForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		var ID;
+		function getId(id) {
+			ID = id;
+		}
+	</script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+</body>
+</html>

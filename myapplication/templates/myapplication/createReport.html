@@ -1,0 +1,101 @@
+<html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<style type="text/css">
+		body {
+	    	background-color: lightblue;
+	    	margin-left: 1em;
+		}
+		h3 {
+			color: navy;
+		}
+		.largefields label {
+			float: left;
+		    width: 130px;
+		}
+		.smallfields label {
+			float: left;
+			width: 35px;
+		}
+		div.buttonFormat1 {
+			float: left;
+			margin-right: 10px;
+			margin-top: 16.5px;
+			margin-left: 0.5em;
+		}
+		div.buttonFormat2 {
+			float:left;
+			margin-top: 3px;
+			margin-right: 10px;
+		}
+	</style>
+</head>
+<body>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		form_count = $("[extra_field_count]");
+		// get extra form count so we know what index to use for the next item.
+		function addFileSubmit() {
+		    element = $('<br>{{ form.uploadfile }}');
+		    element.attr('name', 'extra_field_' + form_count);
+		    element.appendTo(".files")
+
+		    form_count++;
+		    $("[name=extra_field_count]").val(form_count);
+		}
+		
+	</script>
+	<h3>Create a report:</h3>
+	<div id="forms">
+		<form id="submitForm" action="create_report" method="POST" enctype="multipart/form-data">
+			{% csrf_token %}
+			<div>
+				{{ form.errors }}
+			</div>
+			<div class="largefields">
+				<label for="reportname">Report Name: </label>
+		 		{{ form.reportname }}
+		 	</div>
+		 	<div class="largefields">
+				<label for="summary">Report Summary: </label>
+		    	{{ form.summary }}
+			</div>
+			<div>
+				<label for="description">Report Description: </label><br>
+		    	{{ form.description }}
+			</div>
+			<br>
+			<label for="containsencrypted">Are you attaching encrypted files?</label><br>
+			<div class="smallfields">
+				{{ form.containsencrypted }}
+			</div>
+			<br>
+			<label for="isprivate">Is the report public or private?</label><br>
+			<div class="smallfields">
+				{{ form.isprivate }}
+			</div>
+			<br>
+			<label for="groups">If the report is private, please list the names of groups with which you would like to share the report, separated by commas:</label>
+			<div>
+				{{ form.groups }}
+			</div>
+			<br>
+			<div class="files">
+				<label for="uploadfile">Add a file</label><br>
+				{{ form.uploadfile }}
+			</div>
+			<div class="buttonFormat1">
+				<input class="btn btn-primary btn-lg" type="submit" value="Create Report">
+			</div>
+		</form>
+	</div>
+	<div class="buttonFormat2">
+		<button class="btn btn-primary btn-lg" id="add-another" onclick="addFileSubmit()">Add another file</button>
+	</div>
+	<div class="buttonFormat2">
+		<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+	</div>
+</body>
+</html>
