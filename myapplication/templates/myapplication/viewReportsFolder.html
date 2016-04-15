@@ -11,7 +11,10 @@
 			margin-left: 1em;
 		}
 		.buttons {
-			margin-left: 1em;
+			display: inline-block;
+			width: 25%;
+			margin-left: 2em;
+			margin-bottom: 5em;
 			margin-top: 1em;
 		}
 		
@@ -41,14 +44,10 @@
 	</div>
 	<div>
 		<div class="buttons">
-			<button id="createFolderButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createFolder">Create A New Folder</button>
-		</div>
-		<!-- TODO: MOVE ABILITY TO ADD REPORTS TO A FOLDER INTO THE FOLDER PAGE ITSELF -->
-		<div class="buttons">
-			<button id="addReportsButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addReports">Add Reports To A Folder</button>
-		</div>
-		<div class="buttons">
 			<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+		</div>
+		<div class="buttons">
+			<button id="createFolderButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createFolder">Create A New Folder</button>
 		</div>
 	</div>
 	<div class="modal fade" id="createFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
@@ -83,7 +82,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="addReports" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	<!-- <div class="modal fade" id="addReports" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -115,7 +114,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 	<script type="text/javascript">
 		var SHOW = "{{ show }}";
 		var SHOW2 = "{{ show2 }}";

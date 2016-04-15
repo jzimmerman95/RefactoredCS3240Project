@@ -3,108 +3,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
 integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-
-		$('#modifyForm').submit(function(){
-			if ($("#modifyForm").data("changed")) {
-				var RLIST = {{ reportNames|safe }};
-				var newName = document.getElementById('reportnameid').value;
-
-				for (i = 0; i < RLIST.length; i++) {
-					if (RLIST[i] == newName) {
-						alert("A report with that name already exists. Please enter a different name.");
-						return false;
-					}
-				}
-			} 
-			$("<input type='text' value='' />")
-		    	.attr("id", ID)
-		    	.attr("name", "oldreportname")
-		    	.attr("value", ID)
-		    	.attr("type", "hidden")
-		    	.appendTo("#modifyForm");
-			return true;
-		});
-
-		});
-	</script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-
-		$('#deleteForm').submit(function(){
-			$("<input type='text' value='' />")
-		    	.attr("id", ID)
-		    	.attr("name", "deleteReport")
-		    	.attr("value", ID)
-		    	.attr("type", "hidden")
-		    	.appendTo("#deleteForm");
-			return true;
-		});
-		});
-	</script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-
-		$('#removeReportForm').submit(function(){
-			$("<input type='text' value='' />")
-		    	.attr("id", ID)
-		    	.attr("name", "deleteReport")
-		    	.attr("value", ID)
-		    	.attr("type", "hidden")
-		    	.appendTo("#removeReportForm");
-			return true;
-		});
-		});
-	</script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-
-		$('#addFiles').submit(function(){
-			$("<input type='text' value='' />")
-		    	.attr("id", ID)
-		    	.attr("name", "fileeditreportname")
-		    	.attr("value", ID)
-		    	.attr("type", "hidden")
-		    	.appendTo("#addFiles");
-			return true;
-		});
-		});
-	</script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-
-		$('#removeFiles').submit(function(){
-			$("<input type='text' value='' />")
-		    	.attr("id", ID)
-		    	.attr("name", "fileeditreportname")
-		    	.attr("value", ID)
-		    	.attr("type", "hidden")
-		    	.appendTo("#removeFiles");
-			return true;
-		});
-		});
-	</script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-
-		$('#editGroupsForm').submit(function(){
-			$("<input type='text' value='' />")
-		    	.attr("id", ID)
-		    	.attr("name", "editgroupsreportname")
-		    	.attr("value", ID)
-		    	.attr("type", "hidden")
-		    	.appendTo("#editGroupsForm");
-			return true;
-		});
-		});
-	</script>
-	<script type="text/javascript">
-		var ID;
-		function getId(id) {
-			ID = id;
-		}
-	</script>
+	
 	<style type="text/css">
 		body {
 	    	background-color: lightblue;
@@ -114,13 +13,16 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			margin-left: 1em;
 		}
 		.buttons {
-			margin-left: 1em;
+			display: inline-block;
+			width: 25%;
+			margin-left: 2em;
+			margin-bottom: 5em;
 			margin-top: 1em;
 		}
 	</style>
 </head>
 <body>
-	{% ifnotequal folderName None%}
+	{% ifnotequal folderName "None"%}
 		<h3>{{ request.session.firstname }}, your reports from {{folderName}} are displayed below.</h3>
 	{% else %}
 		<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
@@ -179,6 +81,11 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	<div class="buttons">
 		<a class="btn btn-primary btn-lg" href="view_reports_folders">Return to My Folders</a>
 	</div>
+	{%ifnotequal folderName None%}
+		<div class="buttons">
+			<button id="addReportsButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addReports">Add Reports To {{folderName}}</button>
+		</div>
+	{%endifnotequal%}
 
 	<!-- modal to show when process is complete -->
 	<div class="modal fade" id="editReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
@@ -324,6 +231,38 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			</div>
 		</div>
 	</div>
+	<!-- 	Modal to add reports to the folder  -->
+	<div class="modal fade" id="addReports" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h3 class="modal-title" id="myModalLabel">Add Reports to {{folderName}}</h3>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<form id="createFolderForm" method="POST" action="add_reports_folder">
+							{% csrf_token %}
+							<div>
+								<input type="hidden" name="foldername" value="{{folderName}}">
+							</div>
+							<div>
+								<label for="reports">Please enter the names of the report(s) to put in the folder, separated by commas: </label>
+								<p style="color: red;">{{ createFolderForm.reports.errors|striptags }}</p>
+								{{ createFolderForm.reports }}
+							</div>
+							<div style="margin-top:30px;">
+								<button type="submit" class="btn btn-default" onclick="modal">Add Reports</button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
 	<!-- <div class="modal fade" id="editGroups" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
@@ -358,10 +297,14 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	</div> -->
 	<script type="text/javascript">
 		var SHOW = "{{ show }}";
+		var SHOW2 = "{{show2}}";
 		$(document).ready(function(){
 		    // Show the Modal on load
 		    if (SHOW != "") { 
 		    	$("#editFiles").modal("show");
+		    }
+		    if (SHOW2 != "") {
+		    	$("#addReports").modal("show");
 		    }
 		});
 	</script>
@@ -395,6 +338,108 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	<script type="text/javascript">
 		function f(){
 			alert("{{reports}}");
+		}
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#modifyForm').submit(function(){
+			if ($("#modifyForm").data("changed")) {
+				var RLIST = {{ reportNames|safe }};
+				var newName = document.getElementById('reportnameid').value;
+
+				for (i = 0; i < RLIST.length; i++) {
+					if (RLIST[i] == newName) {
+						alert("A report with that name already exists. Please enter a different name.");
+						return false;
+					}
+				}
+			} 
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "oldreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#modifyForm");
+			return true;
+		});
+
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#deleteForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "deleteReport")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#deleteForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#removeReportForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "deleteReport")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#removeReportForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#addFiles').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "fileeditreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#addFiles");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#removeFiles').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "fileeditreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#removeFiles");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+		$('#editGroupsForm').submit(function(){
+			$("<input type='text' value='' />")
+		    	.attr("id", ID)
+		    	.attr("name", "editgroupsreportname")
+		    	.attr("value", ID)
+		    	.attr("type", "hidden")
+		    	.appendTo("#editGroupsForm");
+			return true;
+		});
+		});
+	</script>
+	<script type="text/javascript">
+		var ID;
+		function getId(id) {
+			ID = id;
 		}
 	</script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>

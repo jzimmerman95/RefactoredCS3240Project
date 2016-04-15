@@ -173,22 +173,32 @@ def view_reports(request):
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+	createFolderForm = CreateFolderForm()
 
 	reports = []
-	if request.POST.get('foldername') != None:
-		f = Folders.objects.get(foldername=(request.POST.get('foldername')))
-		if len(f.reports) > 0:
-			l = f.reports.split(',')
-			for r in l:
-				if r.strip() != '':
-					reports.append(Report.objects.get(reportname=r.strip()))
+	if request.method == "POST": 
+		folderName = request.POST.get('foldername')
+		if (folderName != 'None') and (folderName != '') and (folderName != None):
+			f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+			if len(f.reports) > 0:
+				l = f.reports.split(',')
+				for r in l:
+					if r.strip() != '':
+						reports.append(Report.objects.get(reportname=r.strip()))
+		else: 
+			reports = Report.objects.all()
 	else: 
 		reports = Report.objects.all()
 
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def view_reports_folder(request):
 	form = CreateFolderForm()
@@ -229,21 +239,32 @@ def delete_report(request):
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+	createFolderForm = CreateFolderForm()
 
 	reports = []
-	if request.POST.get('foldername') != 'None':
-		f = Folders.objects.get(foldername=(request.POST.get('foldername')))
-		if len(f.reports) > 0:
-			l = f.reports.split(',')
-			for r in l:
-				reports.append(Report.objects.get(reportname=r.strip()))
+	if request.method == "POST": 
+		folderName = request.POST.get('foldername')
+		if (folderName != 'None') and (folderName != '') and (folderName != None):
+			f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+			if len(f.reports) > 0:
+				l = f.reports.split(',')
+				for r in l:
+					if r.strip() != '':
+						reports.append(Report.objects.get(reportname=r.strip()))
+		else: 
+			reports = Report.objects.all()
 	else: 
 		reports = Report.objects.all()
 
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def add_files(request):
 	if request.method == "POST":
@@ -258,14 +279,37 @@ def add_files(request):
 				report_file_obj.save()
 	else: 
 		pass
+
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+	createFolderForm = CreateFolderForm()
+
+	reports = []
+	if request.method == "POST": 
+		folderName = request.POST.get('foldername')
+		if (folderName != 'None') and (folderName != '') and (folderName != None):
+			f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+			if len(f.reports) > 0:
+				l = f.reports.split(',')
+				for r in l:
+					if r.strip() != '':
+						reports.append(Report.objects.get(reportname=r.strip()))
+		else: 
+			reports = Report.objects.all()
+	else: 
+		reports = Report.objects.all()
+
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+	
 def remove_files(request):
 	if request.method == "POST":
 		fileForm = EditFileForm(request.POST, request.FILES)
@@ -284,20 +328,48 @@ def remove_files(request):
 				form = ReportForm()
 				fileForm = EditFileForm(request.POST)
 				groupForm = EditGroupForm()
+				createFolderForm = CreateFolderForm()
 				fileForm.add_error('filestoremove', "There was at least one invalid file name")
 				reportNames = []
 				for report in Report.objects.all():
 					reportNames.append(report.reportname)
-				return render(request, 'myapplication/viewReports.html', {'show': "show",'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+				folderInfo = []
+				for folder in Folders.objects.all():
+					tup = [folder.foldername, folder.owner]
+					folderInfo.append(tup)
+				return render(request, 'myapplication/viewReports.html', {'show': 'show', 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else: 
 		pass
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+	createFolderForm = CreateFolderForm()
+
+	reports = []
+	if request.method == "POST": 
+		folderName = request.POST.get('foldername')
+		if (folderName != 'None') and (folderName != '') and (folderName != None):
+			f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+			if len(f.reports) > 0:
+				l = f.reports.split(',')
+				for r in l:
+					if r.strip() != '':
+						reports.append(Report.objects.get(reportname=r.strip()))
+		else: 
+			reports = Report.objects.all()
+	else: 
+		reports = Report.objects.all()
+
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def edit_groups(request):
 	if request.method == "POST":
@@ -318,11 +390,16 @@ def edit_groups(request):
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+	createFolderForm = CreateFolderForm()
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': Report.objects.all(), 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def manage_reports(request):
 	return render(request, 'myapplication/manageReports.html', {})
@@ -371,8 +448,8 @@ def create_folder(request):
 
 def add_reports_folder(request):
 	if request.method == "POST":
-		form = CreateFolderForm(request.POST)
-		if form.is_valid():
+		createFolderForm = CreateFolderForm(request.POST)
+		if createFolderForm.is_valid():
 			# TODO: get session username to 
 			# username = request.session.get('username')
 			# for now, dummy variable 
@@ -380,16 +457,8 @@ def add_reports_folder(request):
 			foldername = request.POST.get('foldername')
 			reports = request.POST.get('reports')
 			reportsToAddList = reports.split(',')
-			errorFolder = False
+			# errorFolder = False
 			errorReports = False
-			# validate folder existence and owner
-			try: 
-				f = Folders.objects.get(foldername=foldername)
-				if f.owner != username:
-					errorFolder = True
-			except ObjectDoesNotExist:
-				errorFolder = True
-			# validate report existence and owner
 			for r in reportsToAddList:
 				try:
 					rep = Report.objects.get(reportname=r.strip())
@@ -399,7 +468,7 @@ def add_reports_folder(request):
 				except ObjectDoesNotExist:
 					# at least one report does not exist - send form back with error 
 					errorReports = True
-			if errorFolder == False and errorReports == False:
+			if errorReports == False:
 				# you can add those reports to the folder's reports
 				f = Folders.objects.get(foldername=foldername)
 				existingReportsList = f.reports.split(',')
@@ -409,23 +478,69 @@ def add_reports_folder(request):
 				f.reports = ",".join(str(x) for x in existingReportsList)
 				f.save()	
 			else:
-				if errorReports == True:
-					form.add_error('reports', "At least one report does not belong to you or does not exist. Please enter valid report names.")
-				if errorFolder == True:
-					form.add_error('foldername', "The folder does not exist or does not belong to you. Please enter a valid folder name.")
+				createFolderForm=CreateFolderForm(request.POST)
+				createFolderForm.add_error('reports', "At least one report does not belong to you or does not exist. Please enter valid report names.")
+				
+				form = ReportForm()
+				fileForm = EditFileForm()
+				groupForm = EditGroupForm()
+
+				reports = []
+				if request.method == "POST": 
+					folderName = request.POST.get('foldername')
+					if (folderName != 'None') and (folderName != '') and (folderName != None):
+						f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+						if len(f.reports) > 0:
+							l = f.reports.split(',')
+							for r in l:
+								if r.strip() != '':
+									reports.append(Report.objects.get(reportname=r.strip()))
+					else: 
+						reports = Report.objects.all()
+				else: 
+					reports = Report.objects.all()
+
+				reportNames = []
+				for report in Report.objects.all():
+					reportNames.append(report.reportname)
+
 				folderInfo = []
 				for folder in Folders.objects.all():
 					tup = [folder.foldername, folder.owner]
 					folderInfo.append(tup)
-				return render(request, 'myapplication/viewReportsFolder.html', {'show2':'show2', 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+				return render(request, 'myapplication/viewReports.html', {'show2':'show2', 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else:
 		pass
-	form = CreateFolderForm()
+
+	form = ReportForm()
+	fileForm = EditFileForm()
+	groupForm = EditGroupForm()
+
+	reports = []
+	if request.method == "POST": 
+		folderName = request.POST.get('foldername')
+		if (folderName != 'None') and (folderName != '') and (folderName != None):
+			f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+			if len(f.reports) > 0:
+				l = f.reports.split(',')
+				for r in l:
+					if r.strip() != '':
+						reports.append(Report.objects.get(reportname=r.strip()))
+		else: 
+			reports = Report.objects.all()
+	else: 
+		reports = Report.objects.all()
+
+	reportNames = []
+	for report in Report.objects.all():
+		reportNames.append(report.reportname)
+
+	createFolderForm = CreateFolderForm()
 	folderInfo = []
 	for folder in Folders.objects.all():
 		tup = [folder.foldername, folder.owner]
 		folderInfo.append(tup)
-	return render(request, 'myapplication/viewReportsFolder.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def remove_report_folder(request):
 	if request.method == "POST":
@@ -445,22 +560,32 @@ def remove_report_folder(request):
 	form = ReportForm()
 	fileForm = EditFileForm()
 	groupForm = EditGroupForm()
+	createFolderForm = CreateFolderForm()
 
 	reports = []
-	if request.POST.get('foldername') != 'None':
-		f = Folders.objects.get(foldername=(request.POST.get('foldername')))
-		if len(f.reports) > 0:
-			l = f.reports.split(',')
-			for r in l:
-				if r.strip() != '': 
-					reports.append(Report.objects.get(reportname=r.strip()))
+	if request.method == "POST": 
+		folderName = request.POST.get('foldername')
+		if (folderName != 'None') and (folderName != '') and (folderName != None):
+			f = Folders.objects.get(foldername=(request.POST.get('foldername')))
+			if len(f.reports) > 0:
+				l = f.reports.split(',')
+				for r in l:
+					if r.strip() != '':
+						reports.append(Report.objects.get(reportname=r.strip()))
+		else: 
+			reports = Report.objects.all()
 	else: 
 		reports = Report.objects.all()
 
 	reportNames = []
 	for report in Report.objects.all():
 		reportNames.append(report.reportname)
-	return render(request, 'myapplication/viewReports.html', {'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
+
+	folderInfo = []
+	for folder in Folders.objects.all():
+		tup = [folder.foldername, folder.owner]
+		folderInfo.append(tup)
+	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 
 
