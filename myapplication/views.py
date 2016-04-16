@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders
 # for authentication
 from django.contrib.auth.models import User
@@ -12,6 +12,10 @@ from Crypto import Random
 from django.core.exceptions import ObjectDoesNotExist
 # to pass session variables to a template
 from django.template import RequestContext
+
+from django.core.files import File 
+import os
+import mimetypes
 
 
 # Create your views here.
@@ -453,7 +457,8 @@ def edit_groups(request):
 	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
 def manage_reports(request):
-	return render(request, 'myapplication/manageReports.html', {})
+	searchForm = SearchReportsForm();
+	return render(request, 'myapplication/manageReports.html', {'searchForm':searchForm})
 
 def create_folder(request):
 	if request.method == "POST":
@@ -657,3 +662,71 @@ def logout(request):
         request.user = AnonymousUser()
 
     return render(request, 'myapplication/signIn.html')
+
+def download_unencrypted_files(request):
+	filename = request.POST.get('fileToDownload')
+	f = ReportFiles.objects.get(uploadfile=filename).uploadfile
+
+	path = f.path # Get file path
+	wrapper = FileWrapper( open( path, "rb" ) )
+	content_type = mimetypes.guess_type( path )[0]
+
+	response = HttpResponse(wrapper, content_type = content_type)
+	response['Content-Length'] = os.path.getsize( path )
+	fname, file_extension = os.path.splitext(path)
+	response['Content-Disposition'] = 'attachment; filename='+filename
+	return response
+
+# def search_reports(request):
+# 	if request.method == 'POST':
+# 		searchForm = SearchReportsForm(request.POST)
+# 		if searchForm.is_valid():
+# 			searchterms = request.POST.get('searchTerms').split(',')
+# 			nameError = False
+# 			reportName = ""
+# 			reportOwner =""
+# 			reportFile = ""
+# 			for term in searchterms:
+# 				termPair = term.split(':')
+# 				if termPair[0].strip() == 'reportname':
+# 					reportName = termPair[1]
+# 				elif termPair[0].strip() == 'owner':
+# 					reportOwner = termPair[1]
+# 				elif termPair[0].strip() == 'filename':
+# 					reportFile = termPair[1]
+# 				else:
+# 					# there is an error in the listing of terms 
+# 					nameError = True
+# 			reportList = []
+# 			if reportName != "" && reportOwner != "" && reportFile != "":
+# 				# search all 
+# 				files = ReportFiles.objects.filter(uploadfile=reportFile)
+# 				for f in files:
+# 					if f.reportname == reportName:
+# 						report = Report.objects.get(reportname=f.reportname)
+# 						if report.owner == reportOwner:
+# 							# add report
+# 							reportList.append(report)
+# 			elif reportName != "" && reportOwner != "":
+# 				report = Report.objects.all(reportname=reportName)
+# 				if report.owner == reportOwner:
+# 					reportList.append(report)
+# 			elif reportName != "" && reportFile != "":
+# 				files = ReportFiles.objects.filter(uploadfile=reportFile)
+# 				for f in files:
+# 					if f.reportname == reportName:
+# 						report = Report.objects.get(reportname=f.reportname)
+# 						reportList.append(report)
+# 			elif reportName != "":
+# 				reportList.append()
+# 			elif reportOwner != "":
+
+# 			elif reportFile != "":
+# 	else: 
+# 		pass 
+
+
+
+
+
+
