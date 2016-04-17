@@ -7,9 +7,9 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		body {
 	    	background-color: lightblue;
 		}
-		h3, h4 {
+		h3, h4, p {
 			color: navy;
-			margin-left: 1em;
+			margin-left: 10px;
 		}
 		.buttons {
 			margin-left: 1em;
@@ -48,8 +48,10 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	<div class="splitScreen">
 		<h3>Search reports:</h3>
 		<h4>Reports may be searched by name, owner, and whether they are public or private</h4>
+		<p>To search for reports matching all criteria, use the following format: reportname:report1 AND owner:username1 AND availability:public</p>
+		<p>To search for reports matching at least one criterion, use the following format: reportname:report1 OR owner:username1 OR availability:public</p>
 		<div style="margin-left:1em;">
-			<form role="form" method="POST" action="">
+			<form role="form" method="POST" action="search_reports">
 				{% csrf_token %}	
 				<div class="form-group">
 					<label for="searchterms">Please enter search terms: </label>

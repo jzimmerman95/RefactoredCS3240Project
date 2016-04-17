@@ -677,53 +677,183 @@ def download_unencrypted_files(request):
 	response['Content-Disposition'] = 'attachment; filename='+filename
 	return response
 
-# def search_reports(request):
-# 	if request.method == 'POST':
-# 		searchForm = SearchReportsForm(request.POST)
-# 		if searchForm.is_valid():
-# 			searchterms = request.POST.get('searchTerms').split(',')
-# 			nameError = False
-# 			reportName = ""
-# 			reportOwner =""
-# 			reportFile = ""
-# 			for term in searchterms:
-# 				termPair = term.split(':')
-# 				if termPair[0].strip() == 'reportname':
-# 					reportName = termPair[1]
-# 				elif termPair[0].strip() == 'owner':
-# 					reportOwner = termPair[1]
-# 				elif termPair[0].strip() == 'filename':
-# 					reportFile = termPair[1]
-# 				else:
-# 					# there is an error in the listing of terms 
-# 					nameError = True
-# 			reportList = []
-# 			if reportName != "" && reportOwner != "" && reportFile != "":
-# 				# search all 
-# 				files = ReportFiles.objects.filter(uploadfile=reportFile)
-# 				for f in files:
-# 					if f.reportname == reportName:
-# 						report = Report.objects.get(reportname=f.reportname)
-# 						if report.owner == reportOwner:
-# 							# add report
-# 							reportList.append(report)
-# 			elif reportName != "" && reportOwner != "":
-# 				report = Report.objects.all(reportname=reportName)
-# 				if report.owner == reportOwner:
-# 					reportList.append(report)
-# 			elif reportName != "" && reportFile != "":
-# 				files = ReportFiles.objects.filter(uploadfile=reportFile)
-# 				for f in files:
-# 					if f.reportname == reportName:
-# 						report = Report.objects.get(reportname=f.reportname)
-# 						reportList.append(report)
-# 			elif reportName != "":
-# 				reportList.append()
-# 			elif reportOwner != "":
+def search_reports(request):
+	if request.method == 'POST':
+		searchForm = SearchReportsForm(request.POST)
+		if searchForm.is_valid():
 
-# 			elif reportFile != "":
-# 	else: 
-# 		pass 
+			# TODO: GET REAL SESSION VARIABLE
+			# Assume groups are done by username
+			# user = request.session.get('username')
+			# dummy var for now
+			user = 'username1'
+
+			# TODO: ENSURE THAT USER IS ONLY RETURNED REPORTS THAT ARE PUBLIC OR THAT HE/SHE HAS ACCESS TO
+			# reportsForUser = []
+			# for report in Report.objects.all():
+			# 	if report.isprivate == 'public':
+			# 		reportsForUser.append(report)
+			# 	else:
+			# 		# loop through groups and see if user has access to the report
+			# 		# if so, append 
+			reportsForUser = Report.objects.all()
+
+			searchterms = request.POST.get('searchTerms')
+			nameError = False
+			reportName = ""
+			reportOwner =""
+			reportAvail = ""
+			reportsToReturn = []
+			if "AND" in searchterms:
+				searchterms = searchterms.split('AND')
+				for term in searchterms:
+					termPair = term.split(':')
+					if termPair[0].strip() == 'reportname':
+						reportName = termPair[1].strip()
+						print(reportName)
+					elif termPair[0].strip() == 'owner':
+						reportOwner = termPair[1].strip()
+					elif termPair[0].strip() == 'availability':
+						reportAvail = termPair[1].strip()
+					else:
+						# there is an error in the listing of terms 
+						nameError = True
+
+				if reportName != "" and reportOwner != "" and reportAvail != "":
+					report = Report.objects.get(reportname=reportName)
+					if report.owner == reportOwner and report.isprivate == reportAvail:
+						# check that the user has access
+						if report in reportsForUser:
+							reportsToReturn.append(report)
+				elif reportName != "" and reportOwner != "":
+					report = Report.objects.get(reportname=reportName)
+					if report.owner == reportOwner:
+						if report in reportsForUser:
+							reportsToReturn.append(report)
+				elif reportName != "" and reportAvail != "":
+					report = Report.objects.get(reportname=reportName)
+					if report.isprivate == reportAvail and report in reportsForUser:
+						reportsToReturn.append(report)
+				elif reportOwner != "" and reportAvail != "":
+					for r in reportsForUser:
+						if r.owner == reportOwner and r.isprivate == reportAvail:
+							reportsToReturn.append(r)
+
+			elif "OR" in searchterms:
+				searchterms = searchterms.split('OR')
+				for term in searchterms:
+					termPair = term.split(':')
+					if termPair[0].strip() == 'reportname':
+						reportName = termPair[1].strip()
+					elif termPair[0].strip() == 'owner':
+						reportOwner = termPair[1].strip()
+					elif termPair[0].strip() == 'availability':
+						reportAvail = termPair[1].strip()
+					else:
+						# there is an error in the listing of terms 
+						nameError = True
+
+				if reportName != "":
+					for r in reportsForUser:
+						if r.reportname == reportName:
+							reportsToReturn.append(r)
+				if reportOwner != "":
+					for r in reportsForUser:
+						if r.owner == reportOwner and r not in reportsToReturn:
+							reportsToReturn.append(r)
+				if reportAvail != "":
+					for r in reportsForUser:
+						if r.isprivate == reportAvail and r not in reportsToReturn:
+							reportsToReturn.append(r)
+			else: 
+				termPair = searchterms.split(':')
+				if termPair[0].strip() == 'reportname':
+					reportName = termPair[1].strip()
+				elif termPair[0].strip() == 'owner':
+					reportOwner = termPair[1].strip()
+				elif termPair[0].strip() == 'availability':
+					reportAvail = termPair[1].strip()
+				else:
+					# there is an error in the listing of terms 
+					nameError = True
+
+				# find the appropriate report(s)
+				if reportName != "":
+					report = Report.objects.get(reportname=reportName)
+					if report in reportsForUser:
+						reportsToReturn.append(report)
+				elif reportOwner != "":
+					for r in reportsForUser:
+						if r.owner == reportOwner:
+							reportsToReturn.append(r)
+				elif reportAvail != "":
+					for r in reportsForUser:
+						if r.isprivate == reportAvail:
+							reportsToReturn.append(r)
+
+			# TODO: FILTER REPORTS BY SEARCH TERMS 
+			# nameError = False
+			# reportName = ""
+			# reportOwner =""
+			# reportFile = ""
+			# reportAvail = ""
+			# for term in searchterms:
+			# 	termPair = term.split(':')
+			# 	if termPair[0].strip() == 'reportname':
+			# 		reportName = termPair[1]
+			# 	elif termPair[0].strip() == 'owner':
+			# 		reportOwner = termPair[1]
+			# 	elif termPair[0].strip() == 'filename':
+			# 		reportFile = termPair[1]
+			# 	elif termPair[0].strip() == 'availability':
+			# 		reportAvail = termPair[1]
+			# 	else:
+			# 		# there is an error in the listing of terms 
+			# 		nameError = True
+			# reportsToReturn = []
+			# if reportName != "" and reportOwner != "" and reportFile != "":
+			# 	# search all 
+			# 	files = ReportFiles.objects.filter(uploadfile=reportFile)
+			# 	for f in files:
+			# 		if f.reportname == reportName:
+			# 			report = Report.objects.get(reportname=f.reportname)
+			# 			if report.owner == reportOwner and report.isprivate == reportAvail:
+			# 				# check that the user has access to that report
+			# 				if report in reportsForUser:
+			# 					reportsToReturn.append(report)
+			# elif reportName != "" and reportOwner != "":
+			# 	report = Report.objects.all(reportname=reportName)
+			# 	if report.owner == reportOwner:
+			# 		if report in reportsForUser:
+			# 			reportsToReturn.append(report)
+			# elif reportName != "" and reportFile != "":
+			# 	files = ReportFiles.objects.filter(uploadfile=reportFile)
+			# 	for f in files:
+			# 		if f.reportname == reportName:
+			# 			report = Report.objects.get(reportname=f.reportname)
+			# 			if report in reportsForUser:
+			# 				reportsToReturn.append(report)
+			# elif reportName != "":
+			# 	report = Report.objects.get(reportname=reportName)
+			# 	if report in reportsForUser:
+			# 		reportsToReturn.append(report)
+			# elif reportOwner != "":
+			# 	for report in reportsForUser:
+			# 		if report.owner == reportOwner:
+			# 			reportsToReturn.append(report)
+			# elif reportFile != "":
+			# 	for f in ReportFiles.objects.filter(uploadfile=reportFile):
+			# 		report = Report.objects.get(reportname=f.reportname)
+			# 		if report in reportsForUser:
+			# 			reportsToReturn.append(report)
+			if nameError == True:
+				searchForm.add_error('searchTerms', 'The search terms were not entered in the correct format. Please enter search terms as specified by the example search input.')
+				return render(request, 'myapplication/manageReports.html', {'searchForm':searchForm})
+			else: 
+				return render(request, 'myapplication/viewSearchedReports.html', {'reports': reportsToReturn, 'reportfiles': ReportFiles.objects.all()})
+	else: 
+		pass 
+	HttpResponseRedirect('manage_reports')
 
 
 
