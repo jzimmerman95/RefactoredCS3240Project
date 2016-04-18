@@ -11,5 +11,9 @@
 	</head>
 	<body>
 		<p>This is your home page.</p>
+		<form action="log_out">
+                <input type="submit" value="Log Out">
+                </form>
+
 	</body>
 </html>
