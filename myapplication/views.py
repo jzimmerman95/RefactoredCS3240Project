@@ -34,17 +34,24 @@ def sign_user_up(request):
 			email = request.POST.get('email', '')
 			fname = request.POST.get('fname', '')
 			lname = request.POST.get('lname', '')
-			# generate key
-			random_generator = Random.new().read
-			key = RSA.generate(1024, random_generator)
-			publicKey = key.publickey()
-			# insert the user into the  model you created, including the generated public key
-			user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey)
-			user_inf_obj.save()
-			# create and save a user object for authentication
-			user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
-			user.save()
-			return HttpResponseRedirect('home_page')
+
+			# ensure username is unique
+			try: 
+				u = UserInformation.objects.get(username=username)
+				form.add_error('username', 'That username is taken. Please choose a different username.')
+				return render(request, 'myapplication/signUp.html', {'form':form})
+			except ObjectDoesNotExist:
+				# generate key
+				random_generator = Random.new().read
+				key = RSA.generate(1024, random_generator)
+				publicKey = key.publickey()
+				# insert the user into the  model you created, including the generated public key
+				user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey)
+				user_inf_obj.save()
+				# create and save a user object for authentication
+				user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
+				user.save()
+				return HttpResponseRedirect('home_page')
 	else:
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
