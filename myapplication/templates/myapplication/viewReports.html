@@ -72,15 +72,23 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 							{% endfor %}
 						</td>
 						<td>
-							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
-							{% ifnotequal folderName None %}
-								{%ifnotequal folderName 'None'%}
-									<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
-								{%endifnotequal%}
-								<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button> -->
-							{% endifnotequal %}
-							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
-							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
+							<div>
+								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
+							</div>
+							<div>
+								{% ifnotequal folderName None %}
+									{%ifnotequal folderName 'None'%}
+										<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
+									{%endifnotequal%}
+									<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button> -->
+								{% endifnotequal %}
+							</div>
+							<div>
+								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
+							</div>
+							<div>
+								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
+							</div>
 							<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editGroups" style="font-size:5pt; margin-top: 7px;">Edit Groups</button> -->
 						</td>
 					</tr>

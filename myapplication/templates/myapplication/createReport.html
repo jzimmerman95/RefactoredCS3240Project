@@ -8,7 +8,12 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	    	background-color: lightblue;
 	    	margin-left: 1em;
 		}
-		h3 {
+		h3, p {
+			color: navy;
+			margin-left: 10px;
+			margin-bottom: 10px;
+		}
+		label {
 			color: navy;
 		}
 		.largefields label {
@@ -49,53 +54,51 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	</script>
 	<h3>Create a report:</h3>
 	<div id="forms">
-		<form id="submitForm" action="create_report" method="POST" enctype="multipart/form-data">
-			{% csrf_token %}
-			<div>
-				{{ form.errors }}
-			</div>
-			<div class="largefields">
-				<label for="reportname">Report Name: </label>
-		 		{{ form.reportname }}
-		 	</div>
-		 	<div class="largefields">
-				<label for="summary">Report Summary: </label>
-		    	{{ form.summary }}
-			</div>
-			<div>
-				<label for="description">Report Description: </label><br>
-		    	{{ form.description }}
-			</div>
-			<br>
-			<label for="containsencrypted">Are any attached files encrypted?</label><br>
-			<div class="smallfields">
-				{{ form.containsencrypted }}
-			</div>
-			<br>
-			<label for="isprivate">Is the report public or private?</label><br>
-			<div class="smallfields">
-				{{ form.isprivate }}
-			</div>
-			<br>
-			<label for="groups">If the report is private, please list the names of groups with which you would like to share the report, separated by commas:</label>
-			<div>
-				{{ form.groups }}
-			</div>
-			<br>
-			<div class="files">
-				<label for="uploadfile">Add a file</label><br>
-				{{ form.uploadfile }}
-			</div>
-			<div class="buttonFormat1">
-				<input class="btn btn-primary btn-lg" type="submit" value="Create Report">
-			</div>
-		</form>
+		<div style="margin-left:10px;">
+			<form id="submitForm" action="create_report" method="POST" enctype="multipart/form-data">
+				{% csrf_token %}
+				<div>
+					{{ form.errors }}
+				</div>
+				<div class="largefields">
+					<label for="reportname">Report Name: </label>
+			 		{{ form.reportname }}
+			 	</div>
+			 	<div class="largefields">
+					<label for="summary">Report Summary: </label>
+			    	{{ form.summary }}
+				</div>
+				<div>
+					<label for="description">Report Description: </label><br>
+			    	{{ form.description }}
+				</div>
+				<label for="containsencrypted">Are any attached files encrypted?</label><br>
+				<div class="smallfields">
+					{{ form.containsencrypted }}
+				</div>
+				<label for="isprivate">Is the report public or private?</label><br>
+				<div class="smallfields">
+					{{ form.isprivate }}
+				</div>
+				<label for="groups">If the report is private, please list the names of groups with which you would like to share the report, separated by commas:</label>
+				<div>
+					{{ form.groups }}
+				</div>
+				<div class="files">
+					<label for="uploadfile">Add a file</label><br>
+					{{ form.uploadfile }}
+				</div>
+				<div class="buttonFormat1">
+					<input class="btn btn-primary btn-md" type="submit" value="Create Report">
+				</div>
+			</form>
+		</div>
 	</div>
 	<div class="buttonFormat2">
-		<button class="btn btn-primary btn-lg" id="add-another" onclick="addFileSubmit()">Add another file</button>
+		<button class="btn btn-primary btn-md" id="add-another" onclick="addFileSubmit()">Add another file</button>
 	</div>
 	<div class="buttonFormat2">
-		<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+		<a class="btn btn-primary btn-md" href="manage_reports">Return to Manage My Reports</a>
 	</div>
 </body>
 </html>
