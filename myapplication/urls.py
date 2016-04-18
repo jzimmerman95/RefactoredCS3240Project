@@ -21,4 +21,6 @@ urlpatterns = [
     url(r'^remove_report_folder$', views.remove_report_folder, name="remove_report_folder"),
     url(r'^rename_folder$', views.rename_folder, name="rename_folder"),
     url(r'^delete_folder$', views.delete_folder, name="delete_folder"),
+    url(r'^download_unencrypted_files$', views.download_unencrypted_files, name="download_unencrypted_files"),
+    url(r'^search_reports$', views.search_reports, name="search_reports"),
 ]
