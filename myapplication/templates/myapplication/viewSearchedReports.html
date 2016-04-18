@@ -1,0 +1,80 @@
+<html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<title>Searched Reports</title>
+	<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		h3,h4 {
+			color: navy;
+			margin-left: 1em;
+		}
+		.buttons {
+			display: inline-block;
+			width: 25%;
+			margin-left: 2em;
+			margin-bottom: 5em;
+			margin-top: 1em;
+		}
+	</style>
+</head>
+<body>
+	<div>
+		<table class="table table-striped" id="reportTable">
+			<tr>
+				<th onclick="return f();">Report Name</th>
+				<th>Summary</th>
+				<th>Description</th>
+				<th>Contains Encrypted Files?</th>
+				<th>Public/Private</th>
+				<th>Time of Creation</th>
+				<th>File(s)</th>
+				<th></th>
+			</tr>
+			{% for report in reports %}
+				<tr> 
+					<td class="rName">{{report.reportname}}</td>
+					<td class="rSum">{{ report.summary }}</td>
+					<td class="rDesc">{{ report.description }}</td>
+					<td class="rEnc">{{ report.containsencrypted }}</td>
+					<td class="rIsPrivate">{{ report.isprivate }}</td>
+					<td class="rTimeCreation">{{ report.timestamp }}</td>
+					<td class="rFiles">
+						{% for r in reportfiles %}
+							{% ifequal report.reportname r.reportname %}
+								<form id="{{r.uploadfile_id}}" method="POST" action="download_unencrypted_files">
+									{% csrf_token %}
+									<input id="fileToDownload" name="fileToDownload" type="hidden" value="{{r.uploadfile}}">
+									<button type="submit" class="btn btn-link">{{ r.uploadfile }}</button>
+								</form>
+							{% endifequal %}
+						{% endfor %}
+					</td>
+					<!-- <td>
+						<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
+						{% ifnotequal folderName None %}
+							{%ifnotequal folderName 'None'%}
+								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
+							{%endifnotequal%}
+						{% endifnotequal %}
+						<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
+						<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
+					</td> -->
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+	<div class="buttons">
+		<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+	</div>
+	<div class="buttons">
+		<a class="btn btn-primary btn-lg" href="view_reports_folders">Return to My Folders</a>
+	</div>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+
+</body>
+</html>

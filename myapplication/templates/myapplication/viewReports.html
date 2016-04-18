@@ -39,7 +39,8 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				<th>Description</th>
 				<th>Contains Encrypted Files?</th>
 				<th>Public/Private</th>
-				<th>Group(s)</th>
+				<th>Time of Creation</th>
+				<!-- <th>Group(s)</th> -->
 				<th>File(s)</th>
 				<th></th>
 			</tr>
@@ -51,17 +52,22 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<td class="rDesc">{{ report.description }}</td>
 						<td class="rEnc">{{ report.containsencrypted }}</td>
 						<td class="rIsPrivate">{{ report.isprivate }}</td>
-						<td class="rGroups">
+						<td class="rTimeCreation">{{ report.timestamp }}</td>
+						<!-- <td class="rGroups">
 							{% for r in reportgroups %}
 								{% ifequal report.reportname r.reportname %}
 									{{ r.groupname }}
 								{% endifequal %}
 							{% endfor %}
-						</td>
+						</td> -->
 						<td class="rFiles">
 							{% for r in reportfiles %}
 								{% ifequal report.reportname r.reportname %}
-									{{ r.uploadfile }}
+									<form id="{{r.uploadfile_id}}" method="POST" action="download_unencrypted_files">
+										{% csrf_token %}
+										<input id="fileToDownload" name="fileToDownload" type="hidden" value="{{r.uploadfile}}">
+										<button type="submit" class="btn btn-link">{{ r.uploadfile }}</button>
+									</form>
 								{% endifequal %}
 							{% endfor %}
 						</td>

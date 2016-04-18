@@ -74,3 +74,6 @@ class CreateFolderForm(ModelForm):
 
 class RenameFolderForm(forms.Form):
 	newfoldername=forms.CharField(max_length=100)
+
+class SearchReportsForm(forms.Form):
+	searchTerms=forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class':'form-control', 'id':'searchtermsid', 'placeholder':'reportname:myreport OR owner:myname OR availability:private'}))
