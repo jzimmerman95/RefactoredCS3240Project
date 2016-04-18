@@ -56,9 +56,12 @@ def sign_user_up(request):
 					# set the session variables and redirect the user to his/her home page
 					request.session['username'] = username
 					request.session['firstname'] = fname
+
+					# TODO: send user to page with modal pop-up displaying his/her private key, prompt them to write it down
+
 					return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 				else: 
-					form.add_error('username', 'Your passwords do not match. Please make sure that your passwords match.')
+					form.add_error('fname', 'Your passwords do not match. Please make sure that your passwords match.')
 					return render(request, 'myapplication/signUp.html', {'form':form})
 	else:
 		form = UserSignUpForm()
