@@ -1,5 +1,7 @@
 <html>
 	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 		<style type="text/css">
 		body {
 	    	background-color: lightblue;
@@ -11,19 +13,30 @@
 			float: left;
 		    width: 100px;
 		}
+		h3, h4, p {
+			color: navy;
+			margin-left: 10px;
+		}
+		.buttons {
+			margin-top: 10px;
+			margin-left: 10px;
+		}
 		</style>
 	</head>
 	<body>
-		<p><b>Please enter your username and password:</b></p>
-		<form action="sign_user_in" method="POST">
-			{% csrf_token %}
-			<label for="username">Username: </label>
-			<input type="text" name="username"><br>
+		<h3>Please enter your username and password:</h3>
+		<div class="buttons">
+			<form action="sign_user_in" method="POST">
+				{% csrf_token %}
+				<label for="username">Username: </label>
+				<input type="text" name="username"><br>
 
-			<label for="password">Password: </label>
-			<input type="password" name="password"><br>
+				<label for="password">Password: </label>
+				<input type="password" name="password"><br>
 
-			<input type="submit" value="Sign In"><br>
-		</form>
+				<input class="btn btn-primary btn-sm" type="submit" value="Sign In"><br>
+			</form>
+		</div>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 	</body>
 </html>
