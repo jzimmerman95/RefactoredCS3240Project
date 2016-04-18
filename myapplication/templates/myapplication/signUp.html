@@ -1,52 +1,67 @@
 <html>
 	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 		<style type="text/css">
 		body {
 	    	background-color: lightblue;
 		}
-		p {
-			color: navy;
-		}
 		label {
 			float: left;
-		    width: 100px;
+		    width: 150px;
+		}
+		h3, h4, p {
+			color: navy;
+			margin-left: 10px;
+		}
+		.buttons {
+			margin-left: 10px;
 		}
 		</style>
 	</head>
 	<body>
-		<p><b>Please fill out the form to sign up for SafeCollab:</b></p><br>
-	    <form action="sign_user_up" method="POST">
-			{% csrf_token %}
-			{% if form.errors %}
-				{% for field in form %}
-					{% for error in field.errors %}
+		<h3>Please fill out the form to sign up for SafeCollab:</h3><br>
+		<div style="margin-left:10px;">
+		    <form action="sign_user_up" method="POST">
+				{% csrf_token %}
+				{% if form.errors %}
+					{% for field in form %}
+						{% for error in field.errors %}
+							<div class="alert alert-error">
+								<strong style="color:red;">{{ error|striptags }}</strong>
+							</div>
+						{% endfor %}
+					{% endfor %}
+					{% for error in form.non_field_errors %}
 						<div class="alert alert-error">
-							<strong style="color:red;">{{ error|striptags }}</strong>
+							<strong>{{ error|escape }}</strong>
 						</div>
 					{% endfor %}
-				{% endfor %}
-				{% for error in form.non_field_errors %}
-					<div class="alert alert-error">
-						<strong>{{ error|escape }}</strong>
-					</div>
-				{% endfor %}
-			{% endif %}
-			<label for="username">Username: </label>
-			<input type="text" name="username"><br>
+				{% endif %}
+				<label for="username">Username: </label>
+				<input type="text" name="username"><br>
 
-			<label for="password">Password: </label>
-			<input type="text" name="password"><br>
+				<label for="password">Password: </label>
+				<input type="password" name="password"><br>
 
-		    <label for="email">Email: </label>
-			<input type="text" name="email"><br>
+				<label for="password2">Re-enter password: </label>
+				<input type="password" name="password2"><br>
 
-			<label for="fname">First Name: </label>
-			<input type="text" name="fname"><br>
+			    <label for="email">Email: </label>
+				<input type="text" name="email"><br>
 
-			<label for="lname">Last Name: </label>
-			<input type="text" name="lname"><br>
-		    
-		    <input type="submit" value="Sign Up"><br>
-	    </form>
+				<label for="fname">First Name: </label>
+				<input type="text" name="fname"><br>
+
+				<label for="lname">Last Name: </label>
+				<input type="text" name="lname"><br>
+			    
+				<input style="margin-top: 10px;" class="btn btn-primary btn-sm" type="submit" value="Sign Up"><br>
+			</form>
+		</div>
+		<div class="buttons">
+			<a class="btn btn-primary btn-sm" href="home_page">Home</a>
+		</div>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 	</body>
 </html>

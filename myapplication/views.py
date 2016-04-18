@@ -22,8 +22,8 @@ import mimetypes
 def home_page(request):
 	return render(request, 'myapplication/homePage.html', {})
 
-def sign_up(request):
-	return render(request, 'myapplication/signUp.html', {})
+# def sign_up(request):
+# 	return render(request, 'myapplication/signUp.html', {})
 
 def sign_user_up(request):
 	if request.method == 'POST':
@@ -31,6 +31,7 @@ def sign_user_up(request):
 		if form.is_valid():
 			username = request.POST.get('username', '')
 			pwd = request.POST.get('password', '')
+			pwd2 = request.POST.get('password2', '')
 			email = request.POST.get('email', '')
 			fname = request.POST.get('fname', '')
 			lname = request.POST.get('lname', '')
@@ -41,23 +42,30 @@ def sign_user_up(request):
 				form.add_error('username', 'That username is taken. Please choose a different username.')
 				return render(request, 'myapplication/signUp.html', {'form':form})
 			except ObjectDoesNotExist:
-				# generate key
-				random_generator = Random.new().read
-				key = RSA.generate(1024, random_generator)
-				publicKey = key.publickey()
-				# insert the user into the  model you created, including the generated public key
-				user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey)
-				user_inf_obj.save()
-				# create and save a user object for authentication
-				user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
-				user.save()
-				return HttpResponseRedirect('home_page')
+				if pwd == pwd2: 
+					# generate key
+					random_generator = Random.new().read
+					key = RSA.generate(1024, random_generator)
+					publicKey = key.publickey()
+					# insert the user into the  model you created, including the generated public key
+					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey)
+					user_inf_obj.save()
+					# create and save a user object for authentication
+					user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
+					user.save()
+					# set the session variables and redirect the user to his/her home page
+					request.session['username'] = username
+					request.session['firstname'] = fname
+					return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+				else: 
+					form.add_error('username', 'Your passwords do not match. Please make sure that your passwords match.')
+					return render(request, 'myapplication/signUp.html', {'form':form})
 	else:
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
 
 def sign_in(request):
-		return render(request, 'myapplication/signIn.html', {})
+	return render(request, 'myapplication/signIn.html', {})
 
 def sign_user_in(request):
 	username=request.POST.get('username', '')
@@ -65,9 +73,11 @@ def sign_user_in(request):
 	user = authenticate(username=username, password=pwd)
 	if user is not None:
 		if user.is_active:
-			return render(request, 'myapplication/memberHomePage.html', {})
+			request.session['username'] = username
+			request.session['firstname'] = UserInformation.objects.get(username=username).firstname
+			return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 		else:
-			return render(request, 'myapplication/failedLogin.html', {})
+			return render(request, 'myapplication/failedLogin.html', {}, )
 	else: 
 		return render(request, 'myapplication/failedLogin.html', {})
 
@@ -88,9 +98,9 @@ def create_report(request):
 			containsEncrypted = request.POST.get('containsencrypted')
 			isprivate = request.POST.get('isprivate')
 			# TODO: get session variables 
-			# owner = request.session.get('username')
+			owner = request.session.get('username')
 			# SET DUMMY SESSION VARIABLE
-			owner = "username1"
+			# owner = "username1"
 
 			try:
 				r = Report.objects.get(reportname=reportname)
@@ -130,8 +140,8 @@ def create_report(request):
 
 def view_reports(request):
 	# SETTING DUMMY SESSION VARIABLES
-	request.session['username'] = "username1"
-	request.session['firstname'] = "Colleen"
+	# request.session['username'] = "username1"
+	# request.session['firstname'] = "Colleen"
 	if request.method == 'POST':
 		#form = RenameReportForm(request.POST)
 		form = ReportForm(request.POST)
@@ -441,9 +451,9 @@ def edit_groups(request):
 			groupstoadd = request.POST.get('groupstoadd').split(',')
 			groupstoremove = request.POST.get('groupstoremove').split(',')
 			# TODO: get session variables 
-			# owner = request.session.get('username')
+			owner = request.session.get('username')
 			# SET DUMMY SESSION VAR
-			owner = "username1"
+			# owner = "username1"
 			# TODO: check that groups to add the report to a) exist and b) are owned by this owner
 			# TODO: check that groups to remove the report from a) contain the report now
 			pass
@@ -472,9 +482,9 @@ def create_folder(request):
 		form = CreateFolderForm(request.POST)
 		if form.is_valid():
 			# TODO: get session username to 
-			# username = request.session.get('username')
+			username = request.session.get('username')
 			# for now, dummy variable 
-			username = "username1"
+			# username = "username1"
 			foldername = request.POST.get('foldername')
 			reports = request.POST.get('reports')
 			reportList = reports.split(',')
@@ -514,9 +524,9 @@ def add_reports_folder(request):
 		createFolderForm = CreateFolderForm(request.POST)
 		if createFolderForm.is_valid():
 			# TODO: get session username to 
-			# username = request.session.get('username')
+			username = request.session.get('username')
 			# for now, dummy variable 
-			username = "username1"
+			# username = "username1"
 			foldername = request.POST.get('foldername')
 			reports = request.POST.get('reports')
 			reportsToAddList = reports.split(',')
@@ -691,9 +701,9 @@ def search_reports(request):
 
 			# TODO: GET REAL SESSION VARIABLE
 			# Assume groups are done by username
-			# user = request.session.get('username')
+			user = request.session.get('username')
 			# dummy var for now
-			user = 'username1'
+			# user = 'username1'
 
 			# TODO: ENSURE THAT USER IS ONLY RETURNED REPORTS THAT ARE PUBLIC OR THAT HE/SHE HAS ACCESS TO
 			# reportsForUser = []
