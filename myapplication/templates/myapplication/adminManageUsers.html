@@ -23,6 +23,9 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 </head>
 <body>
 	<h3>{{ request.session.firstname }}, all user accounts are displayed below.</h3>
+	{%ifnotequal error 'None'%}
+		<h4 style="color:red;">{{error}}</h4>
+	{%endifnotequal%}
 	<div>
 		<table class="table table-striped" id="reportTable">
 			<tr>
@@ -76,9 +79,10 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<div>
 							<!-- TODO: IMPLEMENT MODEL/VIEW FUNCTIONALITY TO MAKE UP TO 3 USERS SMs -->
 							{% ifequal user.role 'user'%}
-								<form method="POST" action="">
+								<form method="POST" action="admin_make_sitemanager">
 									{% csrf_token %}
 									<input type="hidden" name="username" value="{{user.username}}">
+									<input type="hidden" name="sm" value="{{request.session.username}}">
 									<button id="{{user.username}}" class="button" type="submit" style="font-size:8pt; margin-top: 7px;">Make Site Manager</button>
 								</form>
 							{%endifequal%}

@@ -18,16 +18,22 @@
 	</head>
 	<body>
 		<h2>Welcome, {{request.session.firstname}}</h2>
-		<div class="buttons">
-			<form action="logout">
-				<input class="btn btn-primary btn-md" type="submit" value="Log Out">
-			</form>
-		</div>
+		<h3>Options: </h3>
 		<div class="buttons">
 			<a class="btn btn-primary btn-md" href="manage_reports">Manage My Reports</a>
 		</div>
 		<div class="buttons">
 			<a class="btn btn-primary btn-md" href="manage_reports">Messages</a>
+		</div>
+		{% ifequal request.session.role 'sitemanager' %}
+			<div class="buttons">
+				<a class="btn btn-primary btn-md" href="admin_home_page">Switch to Site Manager Role</a>
+			</div>
+		{%endifequal%}
+		<div class="buttons">
+			<form action="logout">
+				<input class="btn btn-primary btn-md" type="submit" value="Log Out">
+			</form>
 		</div>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script> 
 	</body>

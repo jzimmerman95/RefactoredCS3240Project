@@ -25,7 +25,7 @@ def home_page(request):
 		admin = User.objects.get(username='admin')
 	except ObjectDoesNotExist:
 		# make an admin (site manager) account here 
-		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey='none', role='sitemanager')
+		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey='none', role='sitemanager', numsitemanagersmade=0)
 		user_inf_obj.save()
 		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
 		user.save()
@@ -57,7 +57,7 @@ def sign_user_up(request):
 					key = RSA.generate(1024, random_generator)
 					publicKey = key.publickey()
 					# insert the user into the  model you created, including the generated public key
-					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user')
+					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
 					# create and save a user object for authentication
 					user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
@@ -65,7 +65,7 @@ def sign_user_up(request):
 					# set the session variables and redirect the user to his/her home page
 					request.session['username'] = username
 					request.session['firstname'] = fname
-
+					request.session['role'] = 'user'
 					# TODO: send user to page with modal pop-up displaying his/her private key, prompt them to write it down
 					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
 					#return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
@@ -89,8 +89,9 @@ def sign_user_in(request):
 	if user is not None:
 		if user.is_active:
 			request.session['username'] = username
-			request.session['firstname'] = UserInformation.objects.get(username=username).firstname
 			userInf = UserInformation.objects.get(username=username)
+			request.session['firstname'] = userInf.firstname
+			request.session['role'] = userInf.role
 			if userInf.role == 'sitemanager':
 				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
 			else: 
@@ -187,6 +188,23 @@ def admin_suspend_user(request):
 			user.is_active = True
 			user.save()
 	return render(request, 'myapplication/adminManageUsers.html', {'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request)) 
+
+def admin_make_sitemanager(request):
+	if request.method == 'POST': 
+		u = request.POST['username']
+		sm = request.POST['sm']
+		smInf = UserInformation.objects.get(username=sm)
+		if smInf.numsitemanagersmade < 3:
+			userToChange = UserInformation.objects.get(username=u)
+			userToChange.role = "sitemanager"
+			userToChange.numsitemanagersmade = 0
+			userToChange.save()
+			smInf.numsitemanagersmade = smInf.numsitemanagersmade + 1
+			smInf.save()
+			error = "None"
+		else: 
+			error = "You have already made three users site managers."
+	return render(request, 'myapplication/adminManageUsers.html', {'error': error, 'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request)) 
 
 def view_reports(request):
 	# SETTING DUMMY SESSION VARIABLES

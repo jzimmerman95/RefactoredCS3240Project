@@ -10,7 +10,7 @@ class UserInformation(models.Model):
 	lastname = models.CharField(max_length=200, default='none')
 	publickey = models.CharField(max_length=200, default='none')
 	role = models.CharField(max_length=50, default='user')
-	#numSiteManagers = models.IntegerField()
+	numsitemanagersmade = models.IntegerField(default=0)
 
 CHOICES = (  
 	('yes', 'yes'),
