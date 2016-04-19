@@ -37,7 +37,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				<th onclick="return f();">Report Name</th>
 				<th>Summary</th>
 				<th>Description</th>
-				<th>Contains Encrypted Files?</th>
+				<!-- <th>Contains Encrypted Files?</th> -->
 				<th>Public/Private</th>
 				<th>Time of Creation</th>
 				<!-- <th>Group(s)</th> -->
@@ -50,7 +50,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<td class="rName">{{report.reportname}}</td>
 						<td class="rSum">{{ report.summary }}</td>
 						<td class="rDesc">{{ report.description }}</td>
-						<td class="rEnc">{{ report.containsencrypted }}</td>
+						<!-- <td class="rEnc">{{ report.containsencrypted }}</td> -->
 						<td class="rIsPrivate">{{ report.isprivate }}</td>
 						<td class="rTimeCreation">{{ report.timestamp }}</td>
 						<!-- <td class="rGroups">
@@ -63,11 +63,15 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<td class="rFiles">
 							{% for r in reportfiles %}
 								{% ifequal report.reportname r.reportname %}
-									<form id="{{r.uploadfile_id}}" method="POST" action="download_unencrypted_files">
-										{% csrf_token %}
-										<input id="fileToDownload" name="fileToDownload" type="hidden" value="{{r.uploadfile}}">
-										<button type="submit" class="btn btn-link">{{ r.uploadfile }}</button>
-									</form>
+									{% ifequal r.isencrypted 0%}
+										<form id="{{r.uploadfile_id}}" method="POST" action="download_unencrypted_files">
+											{% csrf_token %}
+											<input id="fileToDownload" name="fileToDownload" type="hidden" value="{{r.uploadfile}}">
+											<button type="submit" class="btn btn-link">{{ r.uploadfile }}</button>
+										</form>
+									{%else%}
+										<p style="margin-left:10px;font-size:10pt;">{{r.uploadfile}}</p>
+									{%endifequal%}
 								{% endifequal %}
 							{% endfor %}
 						</td>
@@ -137,11 +141,11 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 								<p style="color: red;">{{ form.description.errors|striptags }}</p>
 								{{ form.description }}
 							</div>
-							<div>
+							<!-- <div>
 								<label for="containsencrypted">Does the report contain encrypted files? </label>
 								<p style="color: red;">{{ form.containsencrypted.errors|striptags }}</p>
 								{{ form.containsencrypted }}
-							</div>
+							</div> -->
 							<div>
 								<label for="isprivate">Is the report public or private? </label>
 								<p style="color: red;">{{ form.isprivate.errors|striptags }}</p>
@@ -213,21 +217,21 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 					<div class="modal-body">
 						<div class="form-group">
 							<div>
+								<h4>Add files to the report: </h4>
+								<div>
+									<button id="add-another" class="btn btn-default" onclick="addFileSubmit()">Add file</button>
+								</div>
 								<form id="addFiles" method="POST" action="add_files" enctype="multipart/form-data">
 									{% csrf_token %}
-									<h4>Add files to the report: </h4>
 									<div style="margin-bottom: 10px;">
 										<p style="color: red;">{{ fileForm.uploadfile.errors|striptags }}</p>
 										<div class="files">
-											{{ fileForm.uploadfile }}
+											<!-- {{ fileForm.uploadfile }} -->
 										</div>
 									</div>
 									<input type="hidden" name="foldername" value="{{folderName}}">
-									<button type="submit" class="btn btn-default" onclick="modal">Add Files</button>
+									<button type="submit" class="btn btn-default" onclick="modal">Add Files to Report</button>
 								</form>
-							</div>
-							<div>
-								<button id="add-another" class="btn btn-default" onclick="addFileSubmit()">Add another file</button>
 							</div>
 						</div>
 					</div>
@@ -332,12 +336,16 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		});
 	</script>
 	<script type="text/javascript">
-		form_count = $("[extra_field_count]");
+		form_count = 0;//$("[extra_field_count]");
 		// get extra form count so we know what index to use for the next item.
 		function addFileSubmit() {
 		    element = $('<br>{{ fileForm.uploadfile }}');
 		    element.attr('name', 'extra_field_' + form_count);
 		    element.appendTo(".files")
+
+		    element2 = $('<label style="margin-right:10px;" for="isencrypted">Encrypted</label>{{fileForm.isencrypted}}');
+		    element2.attr('name', 'extra_isencrypted_' + form_count)
+		    element2.appendTo(".files")
 
 		    form_count++;
 		    $("[name=extra_field_count]").val(form_count);

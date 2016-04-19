@@ -98,7 +98,7 @@ def create_report(request):
 			reportname = request.POST.get('reportname')
 			summary = request.POST.get('summary')
 			desc = request.POST.get('description')
-			containsEncrypted = request.POST.get('containsencrypted')
+			# containsEncrypted = request.POST.get('containsencrypted')
 			isprivate = request.POST.get('isprivate')
 			# TODO: get session variables 
 			owner = request.session.get('username')
@@ -112,14 +112,21 @@ def create_report(request):
 				form.add_error('reportname', "A report with that name already exists: please try a different name")
 				return render(request, 'myapplication/createReport.html', {'form': form})
 			except ObjectDoesNotExist:
-				report_obj = Report(reportname=reportname, owner=owner, summary=summary, description=desc, containsencrypted=containsEncrypted, isprivate=isprivate)
+				report_obj = Report(reportname=reportname, owner=owner, summary=summary, description=desc, isprivate=isprivate) #containsencrypted=containsEncrypted,
 				report_obj.save()
 				
-				# store all files associated with that report in the file database
 				for filename in request.FILES:
-					uploadfile=request.FILES[filename]
-					report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
-					report_file_obj.save()
+					index = filename.strip('extra_field_')
+					if 'extra_isencrypted_'+index not in request.POST.keys():
+						isenc = "off"
+						uploadfile=request.FILES[filename]
+						report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=False)
+						report_file_obj.save()
+					else: 
+						isenc = request.POST['extra_isencrypted_'+index]
+						uploadfile=request.FILES[filename]
+						report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=""+isenc)
+						report_file_obj.save()
 
 				# store all groups associated with that (private) report in the file database
 				if isprivate == "private":
@@ -154,14 +161,14 @@ def view_reports(request):
 			reportname = request.POST.get('reportname')
 			summary = request.POST.get('summary')
 			desc = request.POST.get('description')
-			containsEncrypted = request.POST.get('containsencrypted')
+			#containsEncrypted = request.POST.get('containsencrypted')
 			isprivate = request.POST.get('isprivate')
 
 			r = Report.objects.get(reportname=oldreportname)
 			r.reportname = reportname
 			r.summary = summary
 			r.description = desc
-			r.containsEncrypted = containsEncrypted
+			#r.containsEncrypted = containsEncrypted
 			r.isprivate = isprivate
 			r.save()
 			try: 
@@ -348,10 +355,18 @@ def add_files(request):
 			# get the report name
 			reportname = request.POST.get('fileeditreportname')
 			# store all files associated with that report in the file database
+
 			for filename in request.FILES:
-				uploadfile=request.FILES[filename]
-				report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
-				report_file_obj.save()
+				index = filename.strip('extra_field_')
+				if 'extra_isencrypted_'+index not in request.POST.keys():
+					uploadfile=request.FILES[filename]
+					report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=False)
+					report_file_obj.save()
+				else: 
+					isenc = request.POST['extra_isencrypted_'+index]
+					uploadfile=request.FILES[filename]
+					report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=""+isenc)
+					report_file_obj.save()
 	else: 
 		pass
 

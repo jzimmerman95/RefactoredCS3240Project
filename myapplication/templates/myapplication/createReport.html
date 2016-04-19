@@ -40,12 +40,17 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 <body>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="text/javascript">
-		form_count = $("[extra_field_count]");
+		form_count = 0; //document.getElementById('extra_field_countid').value;//$("[extra_field_count]");
 		// get extra form count so we know what index to use for the next item.
 		function addFileSubmit() {
+			//alert(form_count);
 		    element = $('<br>{{ form.uploadfile }}');
 		    element.attr('name', 'extra_field_' + form_count);
 		    element.appendTo(".files")
+
+		    element2 = $('<label style="margin-right:10px;" for="isencrypted">Encrypted</label>{{form.isencrypted}}');
+		    element2.attr('name', 'extra_isencrypted_' + form_count)
+		    element2.appendTo(".files")
 
 		    form_count++;
 		    $("[name=extra_field_count]").val(form_count);
@@ -85,8 +90,10 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 					{{ form.groups }}
 				</div>
 				<div class="files">
-					<label for="uploadfile">Add a file</label><br>
+					<!-- <label for="uploadfile">Add files</label><br>
 					{{ form.uploadfile }}
+					<label for="isencrypted">Is this file encrypted?</label>
+					{{ form.isencrypted }} -->
 				</div>
 				<div class="buttonFormat1">
 					<input class="btn btn-primary btn-md" type="submit" value="Create Report">
@@ -95,7 +102,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		</div>
 	</div>
 	<div class="buttonFormat2">
-		<button class="btn btn-primary btn-md" id="add-another" onclick="addFileSubmit()">Add another file</button>
+		<button class="btn btn-primary btn-md" id="add-another" onclick="addFileSubmit()">Add file</button>
 	</div>
 	<div class="buttonFormat2">
 		<a class="btn btn-primary btn-md" href="manage_reports">Return to Manage My Reports</a>
