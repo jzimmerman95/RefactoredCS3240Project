@@ -24,4 +24,10 @@ urlpatterns = [
     url(r'^delete_folder$', views.delete_folder, name="delete_folder"),
     url(r'^download_unencrypted_files$', views.download_unencrypted_files, name="download_unencrypted_files"),
     url(r'^search_reports$', views.search_reports, name="search_reports"),
+    url(r'^admin_home_page$', views.admin_home_page, name='admin_home_page'),
+    url(r'^admin_manage_reports$', views.admin_manage_reports, name='admin_manage_reports'),
+    url(r'^admin_view_reports$', views.admin_view_reports, name='admin_view_reports'),
+    url(r'^admin_delete_report$', views.admin_delete_report, name='admin_delete_report'),
+    url(r'^admin_manage_users$', views.admin_manage_users, name='admin_manage_users'),
+    url(r'^admin_suspend_user$', views.admin_suspend_user, name='admin_suspend_user'),
 ]

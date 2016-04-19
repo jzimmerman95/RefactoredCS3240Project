@@ -18,8 +18,17 @@ import os
 import mimetypes
 
 
+
 # Create your views here.
 def home_page(request):
+	try: 
+		admin = User.objects.get(username='admin')
+	except ObjectDoesNotExist:
+		# make an admin (site manager) account here 
+		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey='none', role='sitemanager')
+		user_inf_obj.save()
+		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
+		user.save()
 	return render(request, 'myapplication/homePage.html', {})
 
 # def sign_up(request):
@@ -48,7 +57,7 @@ def sign_user_up(request):
 					key = RSA.generate(1024, random_generator)
 					publicKey = key.publickey()
 					# insert the user into the  model you created, including the generated public key
-					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey)
+					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user')
 					user_inf_obj.save()
 					# create and save a user object for authentication
 					user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
@@ -81,14 +90,24 @@ def sign_user_in(request):
 		if user.is_active:
 			request.session['username'] = username
 			request.session['firstname'] = UserInformation.objects.get(username=username).firstname
-			return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+			userInf = UserInformation.objects.get(username=username)
+			if userInf.role == 'sitemanager':
+				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
+			else: 
+				return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 		else:
 			return render(request, 'myapplication/failedLogin.html', {}, )
 	else: 
 		return render(request, 'myapplication/failedLogin.html', {})
 
 def member_home_page(request):
-	return render(request, 'myapplication/memberHomePage.html', {})
+	return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+
+def admin_home_page(request):
+	return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
+
+def admin_manage_reports(request):
+	return render(request, 'myapplication/adminManageReports.html', {}, context_instance=RequestContext(request))
 
 def failed_login(request):
 	return render(request, 'myapplication/failedLogin.html', {})
@@ -150,6 +169,24 @@ def create_report(request):
 	else:
 		form = ReportForm()
 	return render(request, 'myapplication/createReport.html', {'form': form})
+
+def admin_view_reports(request):
+	return render(request, 'myapplication/adminViewReports.html', {'reports':Report.objects.all(), 'reportfiles':ReportFiles.objects.all()}, context_instance=RequestContext(request))
+
+def admin_manage_users(request):
+	return render(request, 'myapplication/adminManageUsers.html', {'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request))
+
+def admin_suspend_user(request):
+	if request.method == 'POST':
+		u = request.POST['username']
+		user = User.objects.get(username=u)
+		if user.is_active:
+			user.is_active = False
+			user.save()
+		else:
+			user.is_active = True
+			user.save()
+	return render(request, 'myapplication/adminManageUsers.html', {'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request)) 
 
 def view_reports(request):
 	# SETTING DUMMY SESSION VARIABLES
@@ -292,6 +329,36 @@ def delete_folder(request):
 		tup = [folder.foldername, folder.owner]
 		folderInfo.append(tup)
 	return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
+
+def admin_delete_report(request):
+	if request.method == "POST":
+		reportToDelete = request.POST.get('deleteReport')
+		inst = Report.objects.get(reportname=reportToDelete)
+		inst.delete()
+		try:
+			r_files = ReportFiles.objects.filter(reportname=reportToDelete)
+			for rep in r_files:
+				rep.delete()
+		except ObjectDoesNotExist:
+			pass
+		try: 
+			r_groups = ReportGroups.objects.filter(reportname=reportToDelete)
+			for rep in r_groups:
+				rep.delete()
+		except ObjectDoesNotExist:
+			pass
+		# delete report from folder(s) if necessary
+		for folder in Folders.objects.all():
+			reportList = folder.reports.split(',')
+			for r in reportList:
+				if r.strip() == reportToDelete:
+					reportList.remove(r)
+					folder.reports = ",".join(str(x) for x in reportList)
+					folder.save()
+		# HttpResponseRedirect('view_reports')
+	else: 
+		pass 
+	return render(request, 'myapplication/adminViewReports.html', {'reports':Report.objects.all()}, context_instance=RequestContext(request))
 
 def delete_report(request):
 	if request.method == "POST":

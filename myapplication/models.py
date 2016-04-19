@@ -9,6 +9,8 @@ class UserInformation(models.Model):
 	firstname = models.CharField(max_length=200, default='none')
 	lastname = models.CharField(max_length=200, default='none')
 	publickey = models.CharField(max_length=200, default='none')
+	role = models.CharField(max_length=50, default='user')
+	#numSiteManagers = models.IntegerField()
 
 CHOICES = (  
 	('yes', 'yes'),
