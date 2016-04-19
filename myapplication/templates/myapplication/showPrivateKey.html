@@ -1,0 +1,36 @@
+<html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<title></title>
+</head>
+<body>
+	<div class="modal fade" id="pKey" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Your Private Encryption Key:</h3>
+						<h5 style="color:red;"><b>Once you close this window, you will be unable to see your private key again. Please copy the key and save it in a secure place.<b></h5>
+					</div>
+					<div>
+						<h4 style="font-size:10pt;">{{pkey}}</h4>
+					</div>
+					<div class="modal-footer">
+						<a href="member_home_page" class="btn btn-default">Close</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		$(document).ready(function(){
+		    // Show the Modal on load
+			$("#pKey").modal("show");
+		});
+	</script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+</body>
+</html>

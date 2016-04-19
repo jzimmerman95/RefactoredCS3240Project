@@ -58,14 +58,17 @@ def sign_user_up(request):
 					request.session['firstname'] = fname
 
 					# TODO: send user to page with modal pop-up displaying his/her private key, prompt them to write it down
-
-					return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
+					#return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 				else: 
 					form.add_error('fname', 'Your passwords do not match. Please make sure that your passwords match.')
 					return render(request, 'myapplication/signUp.html', {'form':form})
 	else:
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
+
+def show_pkey(request):
+	return render(request, 'myapplication/showPrivateKey.html', {})
 
 def sign_in(request):
 	return render(request, 'myapplication/signIn.html', {})
