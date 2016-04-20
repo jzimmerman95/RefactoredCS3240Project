@@ -34,9 +34,6 @@ def home_page(request):
 		user.save()
 	return render(request, 'myapplication/homePage.html', {})
 
-# def sign_up(request):
-# 	return render(request, 'myapplication/signUp.html', {})
-
 def sign_user_up(request):
 	if request.method == 'POST':
 		form = UserSignUpForm(request.POST)
@@ -232,6 +229,15 @@ def admin_make_sitemanager(request):
 		else: 
 			error = "You have already made three users site managers."
 	return render(request, 'myapplication/adminManageUsers.html', {'error': error, 'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request)) 
+
+def view_shared_reports(request):
+	username = request.session.get('username')
+	sharedReports = []
+	for group in Groups.objects.filter(username=username):
+		for r in ReportGroups.objects.filter(groupname=group.groupname):
+			rep = Report.objects.get(reportname=r.reportname)
+			sharedReports.append(rep)
+	return render(request, 'myapplication/viewSharedReports.html', {'reports': sharedReports})
 
 def view_reports(request):
 	# SETTING DUMMY SESSION VARIABLES
@@ -831,25 +837,20 @@ def search_reports(request):
 	if request.method == 'POST':
 		searchForm = SearchReportsForm(request.POST)
 		if searchForm.is_valid():
-
-			# TODO: GET REAL SESSION VARIABLE
-			# Assume groups are done by username
 			user = request.session.get('username')
-			# dummy var for now
-			# user = 'username1'
 
-			# TODO: ENSURE THAT USER IS ONLY RETURNED REPORTS THAT ARE PUBLIC OR THAT HE/SHE HAS ACCESS TO
 			reportsForUser = []
 			# add all public reports
 			for report in Report.objects.all():
 				if report.isprivate == 'public':
 					reportsForUser.append(report)
 			# add all private reports shared with user
-			for group in Groups.objects.all(username=user):
+			for group in Groups.objects.filter(username=user):
 				# add all of the reports that are shared with that group
-				for rep in ReportGroups.objects.filter(groupname=group):
-					if rep not in reportsForUser:
-						reportsForUser.append(rep)
+				for rep in ReportGroups.objects.filter(groupname=group.groupname):
+					r = Report.objects.get(reportname=rep.reportname)
+					if r not in reportsForUser:
+						reportsForUser.append(r)
 
 			searchterms = request.POST.get('searchTerms')
 			nameError = False
@@ -943,62 +944,6 @@ def search_reports(request):
 					for r in reportsForUser:
 						if r.isprivate == reportAvail:
 							reportsToReturn.append(r)
-
-			# TODO: FILTER REPORTS BY SEARCH TERMS 
-			# nameError = False
-			# reportName = ""
-			# reportOwner =""
-			# reportFile = ""
-			# reportAvail = ""
-			# for term in searchterms:
-			# 	termPair = term.split(':')
-			# 	if termPair[0].strip() == 'reportname':
-			# 		reportName = termPair[1]
-			# 	elif termPair[0].strip() == 'owner':
-			# 		reportOwner = termPair[1]
-			# 	elif termPair[0].strip() == 'filename':
-			# 		reportFile = termPair[1]
-			# 	elif termPair[0].strip() == 'availability':
-			# 		reportAvail = termPair[1]
-			# 	else:
-			# 		# there is an error in the listing of terms 
-			# 		nameError = True
-			# reportsToReturn = []
-			# if reportName != "" and reportOwner != "" and reportFile != "":
-			# 	# search all 
-			# 	files = ReportFiles.objects.filter(uploadfile=reportFile)
-			# 	for f in files:
-			# 		if f.reportname == reportName:
-			# 			report = Report.objects.get(reportname=f.reportname)
-			# 			if report.owner == reportOwner and report.isprivate == reportAvail:
-			# 				# check that the user has access to that report
-			# 				if report in reportsForUser:
-			# 					reportsToReturn.append(report)
-			# elif reportName != "" and reportOwner != "":
-			# 	report = Report.objects.all(reportname=reportName)
-			# 	if report.owner == reportOwner:
-			# 		if report in reportsForUser:
-			# 			reportsToReturn.append(report)
-			# elif reportName != "" and reportFile != "":
-			# 	files = ReportFiles.objects.filter(uploadfile=reportFile)
-			# 	for f in files:
-			# 		if f.reportname == reportName:
-			# 			report = Report.objects.get(reportname=f.reportname)
-			# 			if report in reportsForUser:
-			# 				reportsToReturn.append(report)
-			# elif reportName != "":
-			# 	report = Report.objects.get(reportname=reportName)
-			# 	if report in reportsForUser:
-			# 		reportsToReturn.append(report)
-			# elif reportOwner != "":
-			# 	for report in reportsForUser:
-			# 		if report.owner == reportOwner:
-			# 			reportsToReturn.append(report)
-			# elif reportFile != "":
-			# 	for f in ReportFiles.objects.filter(uploadfile=reportFile):
-			# 		report = Report.objects.get(reportname=f.reportname)
-			# 		if report in reportsForUser:
-			# 			reportsToReturn.append(report)
 			if nameError == True:
 				searchForm.add_error('searchTerms', 'The search terms were not entered in the correct format. Please enter search terms as specified by the example search input.')
 				return render(request, 'myapplication/manageReports.html', {'searchForm':searchForm})

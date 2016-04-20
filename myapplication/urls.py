@@ -33,4 +33,5 @@ urlpatterns = [
     url(r'^admin_manage_users$', views.admin_manage_users, name='admin_manage_users'),
     url(r'^admin_suspend_user$', views.admin_suspend_user, name='admin_suspend_user'),
     url(r'^admin_make_sitemanager$', views.admin_make_sitemanager, name='admin_make_sitemanager'),
+    url(r'^view_shared_reports$', views.view_shared_reports, name='view_shared_reports'),
 ]
