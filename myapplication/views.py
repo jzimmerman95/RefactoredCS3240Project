@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, CreateGroupForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
 # for authentication
 from django.contrib.auth.models import User
@@ -120,14 +120,43 @@ def failed_login(request):
 	return render(request, 'myapplication/failedLogin.html', {})	
 
 def create_group(request):
-	return render(request, 'myapplication/createGroup.html', {})
+	form = CreateGroupForm()
+	return render(request, 'myapplication/createGroup.html', {'form': form,})
 
 def create_user_group(request):
+	if request.method == 'POST':
+		form = CreateGroupForm(request.POST)
+
 	group_name = request.POST.get('groupname', '')
 	user = request.session['username']
-	group = Groups(groupname=group_name, owner=user, username=user)
-	group.save()
-	return render(request, 'myapplication/memberHomePage.html', {})
+
+	if (Groups.objects.filter(groupname=group_name).exists()):
+		form.add_error('groupname', 'The group name you entered is already taken. Please enter a new one.')
+	else:
+		group = Groups(groupname=group_name, owner=user, username=user)
+		group.save()
+
+	if request.session['role']=='sitemanager':
+		return render(request, 'myapplication/adminViewGroups.html', {})
+	else:
+		user = request.session['username']
+		groups = Groups.objects.all().filter(username=user)
+		return render(request, 'myapplication/ViewGroups.html', {'groups': groups})
+
+def view_groups(request):
+	user = request.session['username']
+	groups = Groups.objects.all().filter(username=user)
+	return render(request, 'myapplication/ViewGroups.html', {'groups': groups})
+
+def admin_view_groups(request):
+	return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all()})
+
+def admin_delete_group(request):
+	if request.method == "POST":
+		reportToDelete = request.POST.get('deleteGroup')
+		inst = Groups.objects.get(groupname=reportToDelete)
+		inst.delete()
+	return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all()})
 
 def create_report(request):
 	if request.method == 'POST':

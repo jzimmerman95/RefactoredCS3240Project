@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import UserInformation, Folders
+from .models import UserInformation, Folders, Groups
 from django.contrib.auth.models import User
 
 class UserSignUpForm(ModelForm):
@@ -83,3 +83,13 @@ class RenameFolderForm(forms.Form):
 
 class SearchReportsForm(forms.Form):
 	searchTerms=forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class':'form-control', 'id':'searchtermsid', 'placeholder':'reportname:myreport OR owner:myname OR availability:private'}))
+
+class CreateGroupForm(ModelForm):
+	class Meta:
+		model = Groups
+		fields = ('groupname',)
+
+	def __init__(self, *args, **kwargs):
+		super(CreateGroupForm, self).__init__(*args, **kwargs)
+		self.fields['groupname'].initial = ''
+	
