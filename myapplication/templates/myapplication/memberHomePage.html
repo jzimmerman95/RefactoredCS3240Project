@@ -10,6 +10,10 @@
 		</style>
 	</head>
 	<body>
-		<p>This is your home page.</p>
+		<p>Welcome, {{request.session.firstname}}</p>
+		<p>Your public key is: {{request.session.publickey}}</p>
+		<form action="create_group">
+	    	<input type="submit" value="Create Group">
+		</form>
 	</body>
 </html>
