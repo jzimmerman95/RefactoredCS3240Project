@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
 # for authentication
 from django.contrib.auth.models import User
@@ -101,7 +101,8 @@ def sign_user_in(request):
 				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
 			else: 
 				passForm = ResetPassForm()
-				return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm}, context_instance=RequestContext(request))
+				keyPairForm = RequestNewKeyPairForm()
+				return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm}, context_instance=RequestContext(request))
 		else:
 			return render(request, 'myapplication/failedLogin.html', {}, )
 	else: 
@@ -109,7 +110,8 @@ def sign_user_in(request):
 
 def member_home_page(request):
 	passForm = ResetPassForm()
-	return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm}, context_instance=RequestContext(request))
+	keyPairForm = RequestNewKeyPairForm()
+	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm}, context_instance=RequestContext(request))
 
 def admin_home_page(request):
 	return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
@@ -129,7 +131,8 @@ def create_user_group(request):
 	group = Groups(groupname=group_name, owner=user, username=user)
 	group.save()
 	passForm = ResetPassForm()
-	return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm})
+	keyPairForm = RequestNewKeyPairForm()
+	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
 
 def create_report(request):
 	if request.method == 'POST':
@@ -973,28 +976,45 @@ def reset_pass(request):
 				else: 
 					# the two passwords did not match
 					passForm.add_error('newpwd', 'Your passwords do not match. Please make sure your passwords match.')
-					return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm})
+					return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm, 'keyPairForm':RequestNewKeyPairForm()})
 			else: 
 				# user is not an existing user (for some reason)
 				passForm.add_error('oldpwd', 'You have entered an invalid existing password.')
-				return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm})
-		return render(request, 'myapplication/memberHomePage.html', {'resetComplete':'resetComplete', 'passForm':ResetPassForm()})
+				return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm, 'keyPairForm':RequestNewKeyPairForm()})
+		return render(request, 'myapplication/memberHomePage.html', {'resetComplete':'resetComplete', 'passForm':ResetPassForm(), 'keyPairForm': RequestNewKeyPairForm()})
 	else: 
 		passForm = ResetPassForm()
-	return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm})
+	keyPairForm = RequestNewKeyPairForm()
+	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
 
 def request_private_key(request):
-	username = request.session.get('username')
-	user = UserInformation.objects.get(username=username)
-	# generate a new key pair
-	random_generator = Random.new().read
-	key = RSA.generate(1024, random_generator)
-	publicKey = key.publickey() #.exportKey()
-	# save the new public key into the database
-	user.publickey = publicKey
-	user.save()
-	# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
-	return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
+	if request.method == "POST":
+		keyPairForm = RequestNewKeyPairForm(request.POST)
+		if keyPairForm.is_valid():
+			uname = request.POST.get('username')
+			pwd = request.POST.get('pwd')
+			username = request.session.get('username')
+			user = authenticate(username=username, password=pwd)
+			if user is not None:
+				user = UserInformation.objects.get(username=username)
+				# generate a new key pair
+				random_generator = Random.new().read
+				key = RSA.generate(1024, random_generator)
+				publicKey = key.publickey() #.exportKey()
+				# save the new public key into the database
+				user.publickey = publicKey
+				user.save()
+				# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
+				return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
+			else: 
+				# user does not exist
+				keyPairForm.add_error('username', 'Your username or password is incorrect. Please enter valid credentials in order to obtain a new key pair.')
+				return render(request, 'myapplication/memberHomePage.html', {'showKeyPairError':'showKeyPairError', 'keyPairForm':keyPairForm, 'passForm':ResetPassForm()})
+	else: 
+		keyPairForm = RequestNewKeyPairForm()
+	passForm = ResetPassForm()
+	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
+
 
 
 

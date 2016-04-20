@@ -93,3 +93,7 @@ class ResetPassForm(forms.Form):
 	oldpwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
 	newpwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
 	newpwd2 = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
+
+class RequestNewKeyPairForm(forms.Form):
+	username = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'text'}))
+	pwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
