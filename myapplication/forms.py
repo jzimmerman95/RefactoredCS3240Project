@@ -22,11 +22,14 @@ class ReportForm(forms.Form):
 	reportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'id':'reportnameid'}))
 	summary = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'id':'summaryid'}))
 	description = forms.CharField(widget=forms.Textarea(attrs={'id':'descriptionid'}))
-	containsencrypted = forms.ChoiceField(choices=CHOICES, required=True, widget=forms.Select(attrs={'id':'containsencryptedid'}))
+	#containsencrypted = forms.ChoiceField(choices=CHOICES, required=True, widget=forms.Select(attrs={'id':'containsencryptedid'}))
 	isprivate = forms.ChoiceField(choices=CHOICES2, required=True, widget=forms.Select(attrs={'id':'isprivateid'}))
 	groups = forms.CharField(max_length=250, widget=forms.TextInput(attrs={'id': 'groupsid'}))
 	uploadfile = forms.FileField(widget=forms.FileInput(attrs={'id': 'uploadfileid'}))
-	extra_field_count = forms.CharField(widget=forms.HiddenInput())
+	isencrypted = forms.BooleanField(widget=forms.CheckboxInput(attrs={'id': 'isencryptedid'}))
+	#isencrypted = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())
+	#isencrypted = forms.CharField()
+	extra_field_count = forms.CharField(widget=forms.HiddenInput(attrs={'id':'extra_field_countid'}))
 
 	def __init__(self, *args, **kwargs):
 		extra_fields = kwargs.pop('extra', 0)
@@ -35,6 +38,7 @@ class ReportForm(forms.Form):
 		self.fields['uploadfile'].required = False
 		self.fields['extra_field_count'].required = False
 		self.fields['groups'].required = False
+		self.fields['isencrypted'].required = False
 		for index in range(int(extra_fields)):
 			# generate extra fields in the number specified via extra_fields
 			self.fields['extra_field_{index}'.format(index=index)] = \
@@ -43,6 +47,7 @@ class ReportForm(forms.Form):
 class EditFileForm(forms.Form):
 	filestoremove = forms.CharField(widget=forms.TextInput(attrs={'id':'filestoremoveid'}))
 	uploadfile = forms.FileField(widget=forms.FileInput(attrs={'id': 'uploadfileid'}))
+	isencrypted = forms.BooleanField(widget=forms.CheckboxInput(attrs={'id': 'isencryptedid'}))
 	extra_field_count = forms.CharField(widget=forms.HiddenInput())
 	
 	def __init__(self, *args, **kwargs):
@@ -52,6 +57,7 @@ class EditFileForm(forms.Form):
 		self.fields['uploadfile'].required = False
 		self.fields['filestoremove'].required = False
 		self.fields['extra_field_count'].required = False
+		self.fields['isencrypted'].required = False
 		for index in range(int(extra_fields)):
 			# generate extra fields in the number specified via extra_fields
 			self.fields['extra_field_{index}'.format(index=index)] = \

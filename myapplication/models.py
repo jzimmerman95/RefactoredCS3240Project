@@ -9,6 +9,8 @@ class UserInformation(models.Model):
 	firstname = models.CharField(max_length=200, default='none')
 	lastname = models.CharField(max_length=200, default='none')
 	publickey = models.CharField(max_length=200, default='none')
+	role = models.CharField(max_length=50, default='user')
+	numsitemanagersmade = models.IntegerField(default=0)
 
 CHOICES = (  
 	('yes', 'yes'),
@@ -25,12 +27,15 @@ class Report(models.Model):
 	owner = models.CharField(max_length=100, default="none")
 	summary = models.CharField(max_length=200)
 	description = models.TextField()
-	containsencrypted = models.CharField(max_length=3, choices=CHOICES, default="no")
+	#containsencrypted = models.CharField(max_length=3, choices=CHOICES, default="no")
 	isprivate = models.CharField(max_length=7, choices=CHOICES2, default="public")
 	timestamp = models.DateTimeField(default=timezone.now, blank=True)
 
 class ReportFiles(models.Model):
 	reportname = models.CharField(max_length=100)
+	#isencrypted = models.BooleanField(default=False)
+	isencrypted = models.BooleanField(choices=CHOICES, default=False)
+	#isencrypted = models.CharField(default="no", max_length=3)
 	uploadfile = models.FileField(upload_to='.')
 
 class ReportGroups(models.Model):

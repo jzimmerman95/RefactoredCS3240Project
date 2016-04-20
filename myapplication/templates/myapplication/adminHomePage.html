@@ -18,22 +18,28 @@
 	</head>
 	<body>
 		<h2>Welcome, {{request.session.firstname}}</h2>
-		<h3>Options: </h3>
-		<div class="buttons">
-			<a class="btn btn-primary btn-md" href="manage_reports">Manage My Reports</a>
-		</div>
-		<div class="buttons">
-			<a class="btn btn-primary btn-md" href="manage_reports">Messages</a>
-		</div>
-		{% ifequal request.session.role 'sitemanager' %}
+		<div>
+			<h3>Site manager options: </h3>
 			<div class="buttons">
-				<a class="btn btn-primary btn-md" href="admin_home_page">Switch to Site Manager Role</a>
+				<a class="btn btn-primary btn-md" href="admin_manage_reports">Manage Reports</a>
 			</div>
-		{%endifequal%}
-		<div class="buttons">
-			<form action="logout">
-				<input class="btn btn-primary btn-md" type="submit" value="Log Out">
-			</form>
+			<div class="buttons">
+				<a class="btn btn-primary btn-md" href="admin_manage_users">Manage User Accounts</a>
+			</div>
+			<div class="buttons">
+				<a class="btn btn-primary btn-md" href="">Manage Groups</a>
+			</div>
+		</div>
+		<div>
+			<h3>Other options: </h3>
+			<div class="buttons">
+				<a class="btn btn-primary btn-md" href="member_home_page">Switch to User Role</a>
+			</div>
+			<div class="buttons">
+				<form action="logout">
+					<input class="btn btn-primary btn-md" type="submit" value="Log Out">
+				</form>
+			</div>
 		</div>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script> 
 	</body>

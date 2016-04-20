@@ -18,8 +18,17 @@ import os
 import mimetypes
 
 
+
 # Create your views here.
 def home_page(request):
+	try: 
+		admin = User.objects.get(username='admin')
+	except ObjectDoesNotExist:
+		# make an admin (site manager) account here 
+		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey='none', role='sitemanager', numsitemanagersmade=0)
+		user_inf_obj.save()
+		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
+		user.save()
 	return render(request, 'myapplication/homePage.html', {})
 
 # def sign_up(request):
@@ -48,7 +57,7 @@ def sign_user_up(request):
 					key = RSA.generate(1024, random_generator)
 					publicKey = key.publickey()
 					# insert the user into the  model you created, including the generated public key
-					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey)
+					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
 					# create and save a user object for authentication
 					user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
@@ -56,13 +65,19 @@ def sign_user_up(request):
 					# set the session variables and redirect the user to his/her home page
 					request.session['username'] = username
 					request.session['firstname'] = fname
-					return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+					request.session['role'] = 'user'
+					# TODO: send user to page with modal pop-up displaying his/her private key, prompt them to write it down
+					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
+					#return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 				else: 
-					form.add_error('username', 'Your passwords do not match. Please make sure that your passwords match.')
+					form.add_error('fname', 'Your passwords do not match. Please make sure that your passwords match.')
 					return render(request, 'myapplication/signUp.html', {'form':form})
 	else:
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form,})
+
+def show_pkey(request):
+	return render(request, 'myapplication/showPrivateKey.html', {})
 
 def sign_in(request):
 	return render(request, 'myapplication/signIn.html', {})
@@ -74,15 +89,26 @@ def sign_user_in(request):
 	if user is not None:
 		if user.is_active:
 			request.session['username'] = username
-			request.session['firstname'] = UserInformation.objects.get(username=username).firstname
-			return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+			userInf = UserInformation.objects.get(username=username)
+			request.session['firstname'] = userInf.firstname
+			request.session['role'] = userInf.role
+			if userInf.role == 'sitemanager':
+				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
+			else: 
+				return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 		else:
 			return render(request, 'myapplication/failedLogin.html', {}, )
 	else: 
 		return render(request, 'myapplication/failedLogin.html', {})
 
 def member_home_page(request):
-	return render(request, 'myapplication/memberHomePage.html', {})
+	return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+
+def admin_home_page(request):
+	return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
+
+def admin_manage_reports(request):
+	return render(request, 'myapplication/adminManageReports.html', {}, context_instance=RequestContext(request))
 
 def failed_login(request):
 	return render(request, 'myapplication/failedLogin.html', {})
@@ -95,7 +121,7 @@ def create_report(request):
 			reportname = request.POST.get('reportname')
 			summary = request.POST.get('summary')
 			desc = request.POST.get('description')
-			containsEncrypted = request.POST.get('containsencrypted')
+			# containsEncrypted = request.POST.get('containsencrypted')
 			isprivate = request.POST.get('isprivate')
 			# TODO: get session variables 
 			owner = request.session.get('username')
@@ -109,14 +135,21 @@ def create_report(request):
 				form.add_error('reportname', "A report with that name already exists: please try a different name")
 				return render(request, 'myapplication/createReport.html', {'form': form})
 			except ObjectDoesNotExist:
-				report_obj = Report(reportname=reportname, owner=owner, summary=summary, description=desc, containsencrypted=containsEncrypted, isprivate=isprivate)
+				report_obj = Report(reportname=reportname, owner=owner, summary=summary, description=desc, isprivate=isprivate) #containsencrypted=containsEncrypted,
 				report_obj.save()
 				
-				# store all files associated with that report in the file database
 				for filename in request.FILES:
-					uploadfile=request.FILES[filename]
-					report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
-					report_file_obj.save()
+					index = filename.strip('extra_field_')
+					if 'extra_isencrypted_'+index not in request.POST.keys():
+						isenc = "off"
+						uploadfile=request.FILES[filename]
+						report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=False)
+						report_file_obj.save()
+					else: 
+						isenc = request.POST['extra_isencrypted_'+index]
+						uploadfile=request.FILES[filename]
+						report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=""+isenc)
+						report_file_obj.save()
 
 				# store all groups associated with that (private) report in the file database
 				if isprivate == "private":
@@ -138,6 +171,41 @@ def create_report(request):
 		form = ReportForm()
 	return render(request, 'myapplication/createReport.html', {'form': form})
 
+def admin_view_reports(request):
+	return render(request, 'myapplication/adminViewReports.html', {'reports':Report.objects.all(), 'reportfiles':ReportFiles.objects.all()}, context_instance=RequestContext(request))
+
+def admin_manage_users(request):
+	return render(request, 'myapplication/adminManageUsers.html', {'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request))
+
+def admin_suspend_user(request):
+	if request.method == 'POST':
+		u = request.POST['username']
+		user = User.objects.get(username=u)
+		if user.is_active:
+			user.is_active = False
+			user.save()
+		else:
+			user.is_active = True
+			user.save()
+	return render(request, 'myapplication/adminManageUsers.html', {'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request)) 
+
+def admin_make_sitemanager(request):
+	if request.method == 'POST': 
+		u = request.POST['username']
+		sm = request.POST['sm']
+		smInf = UserInformation.objects.get(username=sm)
+		if smInf.numsitemanagersmade < 3:
+			userToChange = UserInformation.objects.get(username=u)
+			userToChange.role = "sitemanager"
+			userToChange.numsitemanagersmade = 0
+			userToChange.save()
+			smInf.numsitemanagersmade = smInf.numsitemanagersmade + 1
+			smInf.save()
+			error = "None"
+		else: 
+			error = "You have already made three users site managers."
+	return render(request, 'myapplication/adminManageUsers.html', {'error': error, 'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request)) 
+
 def view_reports(request):
 	# SETTING DUMMY SESSION VARIABLES
 	# request.session['username'] = "username1"
@@ -151,14 +219,14 @@ def view_reports(request):
 			reportname = request.POST.get('reportname')
 			summary = request.POST.get('summary')
 			desc = request.POST.get('description')
-			containsEncrypted = request.POST.get('containsencrypted')
+			#containsEncrypted = request.POST.get('containsencrypted')
 			isprivate = request.POST.get('isprivate')
 
 			r = Report.objects.get(reportname=oldreportname)
 			r.reportname = reportname
 			r.summary = summary
 			r.description = desc
-			r.containsEncrypted = containsEncrypted
+			#r.containsEncrypted = containsEncrypted
 			r.isprivate = isprivate
 			r.save()
 			try: 
@@ -280,6 +348,36 @@ def delete_folder(request):
 		folderInfo.append(tup)
 	return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 
+def admin_delete_report(request):
+	if request.method == "POST":
+		reportToDelete = request.POST.get('deleteReport')
+		inst = Report.objects.get(reportname=reportToDelete)
+		inst.delete()
+		try:
+			r_files = ReportFiles.objects.filter(reportname=reportToDelete)
+			for rep in r_files:
+				rep.delete()
+		except ObjectDoesNotExist:
+			pass
+		try: 
+			r_groups = ReportGroups.objects.filter(reportname=reportToDelete)
+			for rep in r_groups:
+				rep.delete()
+		except ObjectDoesNotExist:
+			pass
+		# delete report from folder(s) if necessary
+		for folder in Folders.objects.all():
+			reportList = folder.reports.split(',')
+			for r in reportList:
+				if r.strip() == reportToDelete:
+					reportList.remove(r)
+					folder.reports = ",".join(str(x) for x in reportList)
+					folder.save()
+		# HttpResponseRedirect('view_reports')
+	else: 
+		pass 
+	return render(request, 'myapplication/adminViewReports.html', {'reports':Report.objects.all()}, context_instance=RequestContext(request))
+
 def delete_report(request):
 	if request.method == "POST":
 		reportToDelete = request.POST.get('deleteReport')
@@ -345,10 +443,18 @@ def add_files(request):
 			# get the report name
 			reportname = request.POST.get('fileeditreportname')
 			# store all files associated with that report in the file database
+
 			for filename in request.FILES:
-				uploadfile=request.FILES[filename]
-				report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile)
-				report_file_obj.save()
+				index = filename.strip('extra_field_')
+				if 'extra_isencrypted_'+index not in request.POST.keys():
+					uploadfile=request.FILES[filename]
+					report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=False)
+					report_file_obj.save()
+				else: 
+					isenc = request.POST['extra_isencrypted_'+index]
+					uploadfile=request.FILES[filename]
+					report_file_obj=ReportFiles(reportname=reportname, uploadfile=uploadfile, isencrypted=""+isenc)
+					report_file_obj.save()
 	else: 
 		pass
 

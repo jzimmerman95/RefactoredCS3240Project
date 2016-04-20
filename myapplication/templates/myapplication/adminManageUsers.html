@@ -22,100 +22,107 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 	</style>
 </head>
 <body>
-	{% ifnotequal folderName None%}
-		{%ifnotequal folderName 'None'%}
-			<h3>{{ request.session.firstname }}, your reports from {{folderName}} are displayed below.</h3>
-		{% else %}
-			<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
-		{%endifnotequal%}
-	{% else %}
-		<h3>{{ request.session.firstname }}, your reports are displayed below.</h3>
-	{% endifnotequal %}
+	<h3>{{ request.session.firstname }}, all user accounts are displayed below.</h3>
+	{%ifnotequal error 'None'%}
+		<h4 style="color:red;">{{error}}</h4>
+	{%endifnotequal%}
 	<div>
 		<table class="table table-striped" id="reportTable">
 			<tr>
-				<th onclick="return f();">Report Name</th>
-				<th>Summary</th>
-				<th>Description</th>
-				<!-- <th>Contains Encrypted Files?</th> -->
-				<th>Public/Private</th>
-				<th>Time of Creation</th>
-				<!-- <th>Group(s)</th> -->
-				<th>File(s)</th>
+				<th>Username</th>
+				<th>First Name</th>
+				<th>Last Name</th>
+				<th>Email</th>
+				<th>Role</th>
+				<th>Active Account?</th>
 				<th></th>
 			</tr>
-			{% for report in reports %}
-				{% ifequal report.owner request.session.username %}
-					<tr> 
-						<td class="rName">{{report.reportname}}</td>
-						<td class="rSum">{{ report.summary }}</td>
-						<td class="rDesc">{{ report.description }}</td>
-						<!-- <td class="rEnc">{{ report.containsencrypted }}</td> -->
-						<td class="rIsPrivate">{{ report.isprivate }}</td>
-						<td class="rTimeCreation">{{ report.timestamp }}</td>
-						<!-- <td class="rGroups">
-							{% for r in reportgroups %}
-								{% ifequal report.reportname r.reportname %}
-									{{ r.groupname }}
-								{% endifequal %}
-							{% endfor %}
-						</td> -->
-						<td class="rFiles">
-							{% for r in reportfiles %}
-								{% ifequal report.reportname r.reportname %}
-									{% ifequal r.isencrypted 0%}
-										<form id="{{r.uploadfile_id}}" method="POST" action="download_unencrypted_files">
-											{% csrf_token %}
-											<input id="fileToDownload" name="fileToDownload" type="hidden" value="{{r.uploadfile}}">
-											<button type="submit" class="btn btn-link">{{ r.uploadfile }}</button>
-										</form>
+			{% for user in userInf %}
+				<tr> 
+					<td class="rUsername">{{user.username}}</td>
+					<td class="rFirstname">{{user.firstname}}</td>
+					<td class="rLastname">{{user.lastname}}</td>
+					<td class="rEmail">{{user.email}}</td>
+					<td class="rRole">{{user.role}}</td>
+					<td>
+						<!-- TODO: FIND ACTIVE/INACTIVE STATUS AND PRINT HERE -->
+						{% for u in users %}
+							{%ifequal u.username user.username%}
+								{{u.is_active}}
+							{%endifequal%}
+						{% endfor %}
+					</td>
+					<td>
+						<div>
+							{% for u in users %}
+								{%ifequal u.username user.username%}
+									{%ifequal u.is_active True%}
+										<div>
+											<form action="admin_suspend_user" method="POST">
+												{% csrf_token %}
+												<input type="hidden" name="username" value="{{user.username}}">
+												<button id="{{user.username}}" class="button" type="submit" style="font-size:8pt; margin-top: 7px;">Suspend User</button>
+											</form>
+										</div>
 									{%else%}
-										<p style="margin-left:10px;font-size:10pt;">{{r.uploadfile}}</p>
+										<div>
+											<form action="admin_suspend_user" method="POST">
+												{% csrf_token %}
+												<input type="hidden" name="username" value="{{user.username}}">
+												<button id="{{user.username}}" class="button" type="submit" style="font-size:8pt; margin-top: 7px;">Activate User</button>
+											</form>
+										</div>
 									{%endifequal%}
-								{% endifequal %}
+								{%endifequal%}
 							{% endfor %}
-						</td>
-						<td>
-							<div>
-								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReport" style="font-size:8pt; margin-top: 7px;">Delete</button>
-							</div>
-							<div>
-								{% ifnotequal folderName None %}
-									{%ifnotequal folderName 'None'%}
-										<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
-									{%endifnotequal%}
-									<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button> -->
-								{% endifnotequal %}
-							</div>
-							<div>
-								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
-							</div>
-							<div>
-								<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
-							</div>
-							<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editGroups" style="font-size:5pt; margin-top: 7px;">Edit Groups</button> -->
-						</td>
-					</tr>
-				{% endifequal %}
+						</div>
+						<div>
+							<!-- TODO: IMPLEMENT MODEL/VIEW FUNCTIONALITY TO MAKE UP TO 3 USERS SMs -->
+							{% ifequal user.role 'user'%}
+								<form method="POST" action="admin_make_sitemanager">
+									{% csrf_token %}
+									<input type="hidden" name="username" value="{{user.username}}">
+									<input type="hidden" name="sm" value="{{request.session.username}}">
+									<button id="{{user.username}}" class="button" type="submit" style="font-size:8pt; margin-top: 7px;">Make Site Manager</button>
+								</form>
+							{%endifequal%}
+						</div>
+						
+						<!-- <div>
+							{% ifnotequal folderName None %}
+								{%ifnotequal folderName 'None'%}
+									<button onclick="return getId(this.id);" id="{{report.reportname}}" class="button" data-toggle="modal" data-target="#deleteReportFromFolder" style="font-size:8pt; margin-top: 7px;">Remove From Folder</button>
+								{%endifnotequal%}
+							{% endifnotequal %}
+						</div> -->
+						<!-- <div>
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonModifyReport" data-toggle="modal" data-target="#editReport" style="font-size:8pt; margin-top: 7px;">Modify</button>
+						</div>
+						<div>
+							<button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editFiles" style="font-size:6pt; margin-top: 7px;">Edit Files</button>
+						</div> -->
+						<!-- <button onclick="return getId(this.id);" id="{{report.reportname}}" class="buttonEditFiles" data-toggle="modal" data-target="#editGroups" style="font-size:5pt; margin-top: 7px;">Edit Groups</button> -->
+					</td>
+				</tr>
 			{% endfor %}
 		</table>
 	</div>
 	<div class="buttons">
-		<a class="btn btn-primary btn-lg" href="manage_reports">Return to Manage My Reports</a>
+		<a class="btn btn-primary btn-lg" href="admin_home_page">Return to Admin Home</a>
 	</div>
-	<div class="buttons">
+	<!-- <div class="buttons">
 		<a class="btn btn-primary btn-lg" href="view_reports_folders">Return to My Folders</a>
-	</div>
-	{%ifnotequal folderName None%}
+	</div> -->
+	<!-- {%ifnotequal folderName None%}
 		{%ifnotequal folderName 'None'%}
 			<div class="buttons">
 				<button id="addReportsButton" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addReports">Add Reports To {{folderName}}</button>
 			</div>
 		{%endifnotequal%}
-	{%endifnotequal%}
+	{%endifnotequal%} -->
 
 	<!-- modal to show when process is complete -->
-	<div class="modal fade" id="editReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	<!-- <div class="modal fade" id="editReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
@@ -140,13 +147,13 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 								<label for="description">Report Description: </label>
 								<p style="color: red;">{{ form.description.errors|striptags }}</p>
 								{{ form.description }}
-							</div>
+							</div> -->
 							<!-- <div>
 								<label for="containsencrypted">Does the report contain encrypted files? </label>
 								<p style="color: red;">{{ form.containsencrypted.errors|striptags }}</p>
 								{{ form.containsencrypted }}
 							</div> -->
-							<div>
+							<!-- <div>
 								<label for="isprivate">Is the report public or private? </label>
 								<p style="color: red;">{{ form.isprivate.errors|striptags }}</p>
 								{{ form.isprivate }}
@@ -163,8 +170,8 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				</div>
 			</div>
 		</div>
-	</div>
-	<div class="modal fade" id="deleteReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	</div> -->
+	<!-- <div class="modal fade" id="deleteReport" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
@@ -172,7 +179,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						<h3 class="modal-title" id="myModalLabel">Delete Report</h3>
 					</div>
-					<form id="deleteForm" method="POST" action="delete_report">
+					<form id="deleteForm" method="POST" action="admin_delete_report">
 						{% csrf_token %}
 						<h4>Are you sure you would like to delete this report?</h4>
 						<button type="submit" class="btn btn-default" onclick="modal">Delete Report</button>
@@ -184,8 +191,8 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				</div>
 			</div>
 		</div>
-	</div>
-	<div class="modal fade" id="deleteReportFromFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	</div> -->
+	<!-- <div class="modal fade" id="deleteReportFromFolder" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
@@ -205,8 +212,8 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				</div>
 			</div>
 		</div>
-	</div>
-	<div class="modal fade" id="editFiles" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	</div> -->
+	<!-- <div class="modal fade" id="editFiles" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
@@ -225,9 +232,9 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 									{% csrf_token %}
 									<div style="margin-bottom: 10px;">
 										<p style="color: red;">{{ fileForm.uploadfile.errors|striptags }}</p>
-										<div class="files">
+										<div class="files"> -->
 											<!-- {{ fileForm.uploadfile }} -->
-										</div>
+										<!-- </div>
 									</div>
 									<input type="hidden" name="foldername" value="{{folderName}}">
 									<button type="submit" class="btn btn-default" onclick="modal">Add Files to Report</button>
@@ -257,9 +264,9 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 	<!-- 	Modal to add reports to the folder  -->
-	<div class="modal fade" id="addReports" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+	<!-- <div class="modal fade" id="addReports" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -289,7 +296,7 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 	<!-- <div class="modal fade" id="editGroups" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
