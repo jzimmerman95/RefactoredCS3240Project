@@ -1,7 +1,8 @@
 from django import forms
 from django.forms import ModelForm
-from .models import UserInformation, Folders
+from .models import UserInformation, Folders, Groups
 from django.contrib.auth.models import User
+from django.forms.widgets import Select
 
 class UserSignUpForm(ModelForm):
 	class Meta:
@@ -24,12 +25,18 @@ class ReportForm(forms.Form):
 	description = forms.CharField(widget=forms.Textarea(attrs={'id':'descriptionid'}))
 	#containsencrypted = forms.ChoiceField(choices=CHOICES, required=True, widget=forms.Select(attrs={'id':'containsencryptedid'}))
 	isprivate = forms.ChoiceField(choices=CHOICES2, required=True, widget=forms.Select(attrs={'id':'isprivateid'}))
-	groups = forms.CharField(max_length=250, widget=forms.TextInput(attrs={'id': 'groupsid'}))
+	#groups = forms.CharField(max_length=250, widget=forms.TextInput(attrs={'id': 'groupsid'}))
+	#groups = forms.ChoiceField()
 	uploadfile = forms.FileField(widget=forms.FileInput(attrs={'id': 'uploadfileid'}))
 	isencrypted = forms.BooleanField(widget=forms.CheckboxInput(attrs={'id': 'isencryptedid'}))
 	#isencrypted = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())
 	#isencrypted = forms.CharField()
 	extra_field_count = forms.CharField(widget=forms.HiddenInput(attrs={'id':'extra_field_countid'}))
+	groups = forms.MultipleChoiceField(widget=forms.SelectMultiple())
+	# CHOICES3 = Groups.objects.all()
+	# widgets = {
+	# 	'groups': Select(choices=( (x.groupname, x.groupname) for x in CHOICES3 )),
+	# }
 
 	def __init__(self, *args, **kwargs):
 		extra_fields = kwargs.pop('extra', 0)
@@ -39,10 +46,17 @@ class ReportForm(forms.Form):
 		self.fields['extra_field_count'].required = False
 		self.fields['groups'].required = False
 		self.fields['isencrypted'].required = False
+		self.fields['groups'].required = False
 		for index in range(int(extra_fields)):
 			# generate extra fields in the number specified via extra_fields
 			self.fields['extra_field_{index}'.format(index=index)] = \
 				forms.CharField()
+
+	def setChoices(self, request):
+		CHOICES3 = []
+		for group in Groups.objects.filter(username=request.session['username']):
+			CHOICES3.append((group.groupname, group.groupname))
+		self.fields['groups'].choices = CHOICES3
 
 class EditFileForm(forms.Form):
 	filestoremove = forms.CharField(widget=forms.TextInput(attrs={'id':'filestoremoveid'}))

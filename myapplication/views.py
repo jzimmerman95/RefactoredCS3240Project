@@ -24,7 +24,11 @@ def home_page(request):
 		admin = User.objects.get(username='admin')
 	except ObjectDoesNotExist:
 		# make an admin (site manager) account here 
-		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey='none', role='sitemanager', numsitemanagersmade=0)
+		# generate key
+		random_generator = Random.new().read
+		key = RSA.generate(1024, random_generator)
+		publicKey = key.publickey().exportKey()
+		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey=publicKey, role='sitemanager', numsitemanagersmade=0)
 		user_inf_obj.save()
 		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
 		user.save()
@@ -54,7 +58,7 @@ def sign_user_up(request):
 					# generate key
 					random_generator = Random.new().read
 					key = RSA.generate(1024, random_generator)
-					publicKey = key.publickey()
+					publicKey = key.publickey().exportKey()
 					# insert the user into the  model you created, including the generated public key
 					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
@@ -66,7 +70,7 @@ def sign_user_up(request):
 					request.session['firstname'] = fname
 					request.session['lastname'] = lname
 					request.session['email'] = email
-					request.session['publickey'] = publicKey
+					#request.session['publickey'] = publicKey
 					request.session['role'] = 'user'
 					# TODO: send user to page with modal pop-up displaying his/her private key, prompt them to write it down
 					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
@@ -132,6 +136,7 @@ def create_user_group(request):
 def create_report(request):
 	if request.method == 'POST':
 		form = ReportForm(request.POST, request.FILES)
+		form.setChoices(request)
 		if form.is_valid():
 			# create a report object
 			reportname = request.POST.get('reportname')
@@ -168,23 +173,29 @@ def create_report(request):
 						report_file_obj.save()
 
 				# store all groups associated with that (private) report in the file database
-				if isprivate == "private":
-					groups = request.POST.get('groups')
-					if groups != "":
-						groups = groups.split(',')
-						for group in groups:
-							# TODO: IMPLEMENT CHECKS FOR WHETHER OR NOT GROUPS EXIST
-							# try: 
-							# 	g = Groups.objects.get(groupname=group)
-							# except ObjectDoesNotExist:
-							# 	pass or alert somehow?
-							group_obj = ReportGroups(reportname=reportname, groupname=group.strip())
-							group_obj.save()
-				
+				groups = request.POST.getlist('groups')
+				for group in groups:
+					report_group_obj = ReportGroups(reportname=reportname, groupname=group)
+					report_group_obj.save()
+				# if groups != "":
+				# 	groups = groups.split(',')
+				# 	for group in groups:
+				# 		# TODO: IMPLEMENT CHECKS FOR WHETHER OR NOT GROUPS EXIST AND OWNER IS A MEMBER
+				# 		try:
+				# 			for entry in Groups.objects.filter(groupname=group):
+				# 				if entry.owner == owner or entry.username == owner:
+				# 					# they are a member of the group and can share the report 
+				# 					reportGroupObj = ReportGroups(reportname=reportname, groupname=group)
+				# 					reportGroupObj.save()
+				# 		except ObjectDoesNotExist: 
+				# 			# the group doesn't exist 
+				# 			form.add_error('groups', 'One or more groups does not exist. Please enter valid group names.')
+				# 			return render(request, 'myapplication/createReport.html', {'form': form})
 				return HttpResponseRedirect('manage_reports')				
 	# # if a GET (or any other method) we'll create a blank form
 	else:
 		form = ReportForm()
+		form.setChoices(request)
 	return render(request, 'myapplication/createReport.html', {'form': form})
 
 def admin_view_reports(request):
@@ -828,14 +839,17 @@ def search_reports(request):
 			# user = 'username1'
 
 			# TODO: ENSURE THAT USER IS ONLY RETURNED REPORTS THAT ARE PUBLIC OR THAT HE/SHE HAS ACCESS TO
-			# reportsForUser = []
-			# for report in Report.objects.all():
-			# 	if report.isprivate == 'public':
-			# 		reportsForUser.append(report)
-			# 	else:
-			# 		# loop through groups and see if user has access to the report
-			# 		# if so, append 
-			reportsForUser = Report.objects.all()
+			reportsForUser = []
+			# add all public reports
+			for report in Report.objects.all():
+				if report.isprivate == 'public':
+					reportsForUser.append(report)
+			# add all private reports shared with user
+			for group in Groups.objects.all(username=user):
+				# add all of the reports that are shared with that group
+				for rep in ReportGroups.objects.filter(groupname=group):
+					if rep not in reportsForUser:
+						reportsForUser.append(rep)
 
 			searchterms = request.POST.get('searchTerms')
 			nameError = False
