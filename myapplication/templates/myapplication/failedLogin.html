@@ -1,18 +1,27 @@
 <html>
 	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 		<style type="text/css">
 		body {
 	    	background-color: lightblue;
 		}
-		p {
+		h3, h4, p {
 			color: navy;
+			margin-left: 10px;
+		}
+		.buttons {
+			margin-left: 10px;
 		}
 		</style>
 	</head>
 	<body>
-		<p>You do not have an account or have entered an incorrect login.</p>
-		<form action="home_page">
-			<input type="submit" value="Return to Home">
-		</form>
+		<h3>You do not have an account, have entered an incorrect login, or your account has been suspended. If your account has been suspended, please contact a site manager.</h3>
+		<div class="buttons">
+			<form action="home_page">
+				<input class="btn btn-primary btn-sm" type="submit" value="Return to Home">
+			</form>
+		</div>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 	</body>
 </html>
