@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
 # for authentication
 from django.contrib.auth.models import User
@@ -27,7 +27,7 @@ def home_page(request):
 		# generate key
 		random_generator = Random.new().read
 		key = RSA.generate(1024, random_generator)
-		publicKey = key.publickey().exportKey()
+		publicKey = key.publickey() #.exportKey()
 		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey=publicKey, role='sitemanager', numsitemanagersmade=0)
 		user_inf_obj.save()
 		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
@@ -55,7 +55,7 @@ def sign_user_up(request):
 					# generate key
 					random_generator = Random.new().read
 					key = RSA.generate(1024, random_generator)
-					publicKey = key.publickey().exportKey()
+					publicKey = key.publickey() #.exportKey()
 					# insert the user into the  model you created, including the generated public key
 					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
@@ -67,17 +67,15 @@ def sign_user_up(request):
 					request.session['firstname'] = fname
 					request.session['lastname'] = lname
 					request.session['email'] = email
-					#request.session['publickey'] = publicKey
 					request.session['role'] = 'user'
-					# TODO: send user to page with modal pop-up displaying his/her private key, prompt them to write it down
+					# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
 					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
-					#return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 				else: 
 					form.add_error('fname', 'Your passwords do not match. Please make sure that your passwords match.')
 					return render(request, 'myapplication/signUp.html', {'form':form})
 	else:
 		form = UserSignUpForm()
-	return render(request, 'myapplication/signUp.html', {'form': form,})
+	return render(request, 'myapplication/signUp.html', {'form': form})
 
 def show_pkey(request):
 	return render(request, 'myapplication/showPrivateKey.html', {})
@@ -102,14 +100,16 @@ def sign_user_in(request):
 			if userInf.role == 'sitemanager':
 				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
 			else: 
-				return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+				passForm = ResetPassForm()
+				return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm}, context_instance=RequestContext(request))
 		else:
 			return render(request, 'myapplication/failedLogin.html', {}, )
 	else: 
 		return render(request, 'myapplication/failedLogin.html', {})
 
 def member_home_page(request):
-	return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+	passForm = ResetPassForm()
+	return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm}, context_instance=RequestContext(request))
 
 def admin_home_page(request):
 	return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
@@ -128,7 +128,8 @@ def create_user_group(request):
 	user = request.session['username']
 	group = Groups(groupname=group_name, owner=user, username=user)
 	group.save()
-	return render(request, 'myapplication/memberHomePage.html', {})
+	passForm = ResetPassForm()
+	return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm})
 
 def create_report(request):
 	if request.method == 'POST':
@@ -952,4 +953,48 @@ def search_reports(request):
 	else: 
 		pass 
 	HttpResponseRedirect('manage_reports')
+
+def reset_pass(request):
+	if request.method == "POST":
+		passForm = ResetPassForm(request.POST)
+		if passForm.is_valid():
+			oldpwd = request.POST.get('oldpwd')
+			newpwd = request.POST.get('newpwd')
+			newpwd2 = request.POST.get('newpwd2')
+			username = request.session.get('username')
+			# authenticate user
+			user = authenticate(username=username, password=oldpwd)
+			if user is not None:
+				if newpwd == newpwd2:
+					# reset the password
+					u = User.objects.get(username=username)
+					u.set_password(newpwd)
+					u.save()
+				else: 
+					# the two passwords did not match
+					passForm.add_error('newpwd', 'Your passwords do not match. Please make sure your passwords match.')
+					return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm})
+			else: 
+				# user is not an existing user (for some reason)
+				passForm.add_error('oldpwd', 'You have entered an invalid existing password.')
+				return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm})
+		return render(request, 'myapplication/memberHomePage.html', {'resetComplete':'resetComplete', 'passForm':ResetPassForm()})
+	else: 
+		passForm = ResetPassForm()
+	return render(request, 'myapplication/memberHomePage.html', {'passForm':passForm})
+
+def request_private_key(request):
+	username = request.session.get('username')
+	user = UserInformation.objects.get(username=username)
+	# generate a new key pair
+	random_generator = Random.new().read
+	key = RSA.generate(1024, random_generator)
+	publicKey = key.publickey() #.exportKey()
+	# save the new public key into the database
+	user.publickey = publicKey
+	user.save()
+	# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
+	return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
+
+
 

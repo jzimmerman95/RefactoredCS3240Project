@@ -23,20 +23,11 @@ class ReportForm(forms.Form):
 	reportname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'id':'reportnameid'}))
 	summary = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'id':'summaryid'}))
 	description = forms.CharField(widget=forms.Textarea(attrs={'id':'descriptionid'}))
-	#containsencrypted = forms.ChoiceField(choices=CHOICES, required=True, widget=forms.Select(attrs={'id':'containsencryptedid'}))
 	isprivate = forms.ChoiceField(choices=CHOICES2, required=True, widget=forms.Select(attrs={'id':'isprivateid'}))
-	#groups = forms.CharField(max_length=250, widget=forms.TextInput(attrs={'id': 'groupsid'}))
-	#groups = forms.ChoiceField()
 	uploadfile = forms.FileField(widget=forms.FileInput(attrs={'id': 'uploadfileid'}))
 	isencrypted = forms.BooleanField(widget=forms.CheckboxInput(attrs={'id': 'isencryptedid'}))
-	#isencrypted = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())
-	#isencrypted = forms.CharField()
 	extra_field_count = forms.CharField(widget=forms.HiddenInput(attrs={'id':'extra_field_countid'}))
 	groups = forms.MultipleChoiceField(widget=forms.SelectMultiple())
-	# CHOICES3 = Groups.objects.all()
-	# widgets = {
-	# 	'groups': Select(choices=( (x.groupname, x.groupname) for x in CHOICES3 )),
-	# }
 
 	def __init__(self, *args, **kwargs):
 		extra_fields = kwargs.pop('extra', 0)
@@ -97,3 +88,8 @@ class RenameFolderForm(forms.Form):
 
 class SearchReportsForm(forms.Form):
 	searchTerms=forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class':'form-control', 'id':'searchtermsid', 'placeholder':'reportname:myreport OR owner:myname OR availability:private'}))
+
+class ResetPassForm(forms.Form):
+	oldpwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
+	newpwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
+	newpwd2 = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
