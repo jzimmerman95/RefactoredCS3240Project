@@ -12,6 +12,11 @@ class UserInformation(models.Model):
 	role = models.CharField(max_length=50, default='user')
 	numsitemanagersmade = models.IntegerField(default=0)
 
+class Groups(models.Model):
+	groupname = models.CharField(max_length=200, default='none')
+	owner = models.CharField(max_length=200, default='none')
+	username = models.CharField(max_length=200, default='none')
+
 CHOICES = (  
 	('yes', 'yes'),
 	('no', 'no'),

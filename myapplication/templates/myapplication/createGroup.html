@@ -1,0 +1,12 @@
+<html>
+	<head></head>
+	<body>
+		<form action="create_user_group" method="POST">
+			{% csrf_token %}
+			<label for="groupname">Group Name: </label>
+			<input type="text" name="groupname"><br>
+
+			<input type="submit" value="Create Group"><br>
+		</form>
+	</body>
+</html>
