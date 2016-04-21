@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, CreateGroupForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
 # for authentication
 from django.contrib.auth.models import User
@@ -24,14 +24,15 @@ def home_page(request):
 		admin = User.objects.get(username='admin')
 	except ObjectDoesNotExist:
 		# make an admin (site manager) account here 
-		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey='none', role='sitemanager', numsitemanagersmade=0)
+		# generate key
+		random_generator = Random.new().read
+		key = RSA.generate(1024, random_generator)
+		publicKey = key.publickey() #.exportKey()
+		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey=publicKey, role='sitemanager', numsitemanagersmade=0)
 		user_inf_obj.save()
 		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
 		user.save()
 	return render(request, 'myapplication/homePage.html', {})
-
-# def sign_up(request):
-# 	return render(request, 'myapplication/signUp.html', {})
 
 def sign_user_up(request):
 	if request.method == 'POST':
@@ -54,7 +55,7 @@ def sign_user_up(request):
 					# generate key
 					random_generator = Random.new().read
 					key = RSA.generate(1024, random_generator)
-					publicKey = key.publickey()
+					publicKey = key.publickey() #.exportKey()
 					# insert the user into the  model you created, including the generated public key
 					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
@@ -66,17 +67,15 @@ def sign_user_up(request):
 					request.session['firstname'] = fname
 					request.session['lastname'] = lname
 					request.session['email'] = email
-					request.session['publickey'] = publicKey
 					request.session['role'] = 'user'
-					# TODO: send user to page with modal pop-up displaying his/her private key, prompt them to write it down
+					# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
 					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
-					#return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
 				else: 
 					form.add_error('fname', 'Your passwords do not match. Please make sure that your passwords match.')
 					return render(request, 'myapplication/signUp.html', {'form':form})
 	else:
 		form = UserSignUpForm()
-	return render(request, 'myapplication/signUp.html', {'form': form,})
+	return render(request, 'myapplication/signUp.html', {'form': form})
 
 def show_pkey(request):
 	return render(request, 'myapplication/showPrivateKey.html', {})
@@ -101,14 +100,18 @@ def sign_user_in(request):
 			if userInf.role == 'sitemanager':
 				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
 			else: 
-				return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+				passForm = ResetPassForm()
+				keyPairForm = RequestNewKeyPairForm()
+				return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm}, context_instance=RequestContext(request))
 		else:
 			return render(request, 'myapplication/failedLogin.html', {}, )
 	else: 
 		return render(request, 'myapplication/failedLogin.html', {})
 
 def member_home_page(request):
-	return render(request, 'myapplication/memberHomePage.html', {}, context_instance=RequestContext(request))
+	passForm = ResetPassForm()
+	keyPairForm = RequestNewKeyPairForm()
+	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm}, context_instance=RequestContext(request))
 
 def admin_home_page(request):
 	return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
@@ -156,6 +159,7 @@ def admin_delete_group(request):
 def create_report(request):
 	if request.method == 'POST':
 		form = ReportForm(request.POST, request.FILES)
+		form.setChoices(request)
 		if form.is_valid():
 			# create a report object
 			reportname = request.POST.get('reportname')
@@ -192,23 +196,29 @@ def create_report(request):
 						report_file_obj.save()
 
 				# store all groups associated with that (private) report in the file database
-				if isprivate == "private":
-					groups = request.POST.get('groups')
-					if groups != "":
-						groups = groups.split(',')
-						for group in groups:
-							# TODO: IMPLEMENT CHECKS FOR WHETHER OR NOT GROUPS EXIST
-							# try: 
-							# 	g = Groups.objects.get(groupname=group)
-							# except ObjectDoesNotExist:
-							# 	pass or alert somehow?
-							group_obj = ReportGroups(reportname=reportname, groupname=group.strip())
-							group_obj.save()
-				
+				groups = request.POST.getlist('groups')
+				for group in groups:
+					report_group_obj = ReportGroups(reportname=reportname, groupname=group)
+					report_group_obj.save()
+				# if groups != "":
+				# 	groups = groups.split(',')
+				# 	for group in groups:
+				# 		# TODO: IMPLEMENT CHECKS FOR WHETHER OR NOT GROUPS EXIST AND OWNER IS A MEMBER
+				# 		try:
+				# 			for entry in Groups.objects.filter(groupname=group):
+				# 				if entry.owner == owner or entry.username == owner:
+				# 					# they are a member of the group and can share the report 
+				# 					reportGroupObj = ReportGroups(reportname=reportname, groupname=group)
+				# 					reportGroupObj.save()
+				# 		except ObjectDoesNotExist: 
+				# 			# the group doesn't exist 
+				# 			form.add_error('groups', 'One or more groups does not exist. Please enter valid group names.')
+				# 			return render(request, 'myapplication/createReport.html', {'form': form})
 				return HttpResponseRedirect('manage_reports')				
 	# # if a GET (or any other method) we'll create a blank form
 	else:
 		form = ReportForm()
+		form.setChoices(request)
 	return render(request, 'myapplication/createReport.html', {'form': form})
 
 def admin_view_reports(request):
@@ -245,6 +255,15 @@ def admin_make_sitemanager(request):
 		else: 
 			error = "You have already made three users site managers."
 	return render(request, 'myapplication/adminManageUsers.html', {'error': error, 'users':User.objects.all(), 'userInf':UserInformation.objects.all()}, context_instance=RequestContext(request)) 
+
+def view_shared_reports(request):
+	username = request.session.get('username')
+	sharedReports = []
+	for group in Groups.objects.filter(username=username):
+		for r in ReportGroups.objects.filter(groupname=group.groupname):
+			rep = Report.objects.get(reportname=r.reportname)
+			sharedReports.append(rep)
+	return render(request, 'myapplication/viewSharedReports.html', {'reports': sharedReports, 'reportfiles':ReportFiles.objects.all()})
 
 def view_reports(request):
 	# SETTING DUMMY SESSION VARIABLES
@@ -844,22 +863,20 @@ def search_reports(request):
 	if request.method == 'POST':
 		searchForm = SearchReportsForm(request.POST)
 		if searchForm.is_valid():
-
-			# TODO: GET REAL SESSION VARIABLE
-			# Assume groups are done by username
 			user = request.session.get('username')
-			# dummy var for now
-			# user = 'username1'
 
-			# TODO: ENSURE THAT USER IS ONLY RETURNED REPORTS THAT ARE PUBLIC OR THAT HE/SHE HAS ACCESS TO
-			# reportsForUser = []
-			# for report in Report.objects.all():
-			# 	if report.isprivate == 'public':
-			# 		reportsForUser.append(report)
-			# 	else:
-			# 		# loop through groups and see if user has access to the report
-			# 		# if so, append 
-			reportsForUser = Report.objects.all()
+			reportsForUser = []
+			# add all public reports
+			for report in Report.objects.all():
+				if report.isprivate == 'public':
+					reportsForUser.append(report)
+			# add all private reports shared with user
+			for group in Groups.objects.filter(username=user):
+				# add all of the reports that are shared with that group
+				for rep in ReportGroups.objects.filter(groupname=group.groupname):
+					r = Report.objects.get(reportname=rep.reportname)
+					if r not in reportsForUser:
+						reportsForUser.append(r)
 
 			searchterms = request.POST.get('searchTerms')
 			nameError = False
@@ -953,62 +970,6 @@ def search_reports(request):
 					for r in reportsForUser:
 						if r.isprivate == reportAvail:
 							reportsToReturn.append(r)
-
-			# TODO: FILTER REPORTS BY SEARCH TERMS 
-			# nameError = False
-			# reportName = ""
-			# reportOwner =""
-			# reportFile = ""
-			# reportAvail = ""
-			# for term in searchterms:
-			# 	termPair = term.split(':')
-			# 	if termPair[0].strip() == 'reportname':
-			# 		reportName = termPair[1]
-			# 	elif termPair[0].strip() == 'owner':
-			# 		reportOwner = termPair[1]
-			# 	elif termPair[0].strip() == 'filename':
-			# 		reportFile = termPair[1]
-			# 	elif termPair[0].strip() == 'availability':
-			# 		reportAvail = termPair[1]
-			# 	else:
-			# 		# there is an error in the listing of terms 
-			# 		nameError = True
-			# reportsToReturn = []
-			# if reportName != "" and reportOwner != "" and reportFile != "":
-			# 	# search all 
-			# 	files = ReportFiles.objects.filter(uploadfile=reportFile)
-			# 	for f in files:
-			# 		if f.reportname == reportName:
-			# 			report = Report.objects.get(reportname=f.reportname)
-			# 			if report.owner == reportOwner and report.isprivate == reportAvail:
-			# 				# check that the user has access to that report
-			# 				if report in reportsForUser:
-			# 					reportsToReturn.append(report)
-			# elif reportName != "" and reportOwner != "":
-			# 	report = Report.objects.all(reportname=reportName)
-			# 	if report.owner == reportOwner:
-			# 		if report in reportsForUser:
-			# 			reportsToReturn.append(report)
-			# elif reportName != "" and reportFile != "":
-			# 	files = ReportFiles.objects.filter(uploadfile=reportFile)
-			# 	for f in files:
-			# 		if f.reportname == reportName:
-			# 			report = Report.objects.get(reportname=f.reportname)
-			# 			if report in reportsForUser:
-			# 				reportsToReturn.append(report)
-			# elif reportName != "":
-			# 	report = Report.objects.get(reportname=reportName)
-			# 	if report in reportsForUser:
-			# 		reportsToReturn.append(report)
-			# elif reportOwner != "":
-			# 	for report in reportsForUser:
-			# 		if report.owner == reportOwner:
-			# 			reportsToReturn.append(report)
-			# elif reportFile != "":
-			# 	for f in ReportFiles.objects.filter(uploadfile=reportFile):
-			# 		report = Report.objects.get(reportname=f.reportname)
-			# 		if report in reportsForUser:
-			# 			reportsToReturn.append(report)
 			if nameError == True:
 				searchForm.add_error('searchTerms', 'The search terms were not entered in the correct format. Please enter search terms as specified by the example search input.')
 				return render(request, 'myapplication/manageReports.html', {'searchForm':searchForm})
@@ -1017,4 +978,65 @@ def search_reports(request):
 	else: 
 		pass 
 	HttpResponseRedirect('manage_reports')
+
+def reset_pass(request):
+	if request.method == "POST":
+		passForm = ResetPassForm(request.POST)
+		if passForm.is_valid():
+			oldpwd = request.POST.get('oldpwd')
+			newpwd = request.POST.get('newpwd')
+			newpwd2 = request.POST.get('newpwd2')
+			username = request.session.get('username')
+			# authenticate user
+			user = authenticate(username=username, password=oldpwd)
+			if user is not None:
+				if newpwd == newpwd2:
+					# reset the password
+					u = User.objects.get(username=username)
+					u.set_password(newpwd)
+					u.save()
+				else: 
+					# the two passwords did not match
+					passForm.add_error('newpwd', 'Your passwords do not match. Please make sure your passwords match.')
+					return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm, 'keyPairForm':RequestNewKeyPairForm()})
+			else: 
+				# user is not an existing user (for some reason)
+				passForm.add_error('oldpwd', 'You have entered an invalid existing password.')
+				return render(request, 'myapplication/memberHomePage.html', {'show':'show', 'passForm':passForm, 'keyPairForm':RequestNewKeyPairForm()})
+		return render(request, 'myapplication/memberHomePage.html', {'resetComplete':'resetComplete', 'passForm':ResetPassForm(), 'keyPairForm': RequestNewKeyPairForm()})
+	else: 
+		passForm = ResetPassForm()
+	keyPairForm = RequestNewKeyPairForm()
+	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
+
+def request_private_key(request):
+	if request.method == "POST":
+		keyPairForm = RequestNewKeyPairForm(request.POST)
+		if keyPairForm.is_valid():
+			uname = request.POST.get('username')
+			pwd = request.POST.get('pwd')
+			username = request.session.get('username')
+			user = authenticate(username=username, password=pwd)
+			if user is not None:
+				user = UserInformation.objects.get(username=username)
+				# generate a new key pair
+				random_generator = Random.new().read
+				key = RSA.generate(1024, random_generator)
+				publicKey = key.publickey() #.exportKey()
+				# save the new public key into the database
+				user.publickey = publicKey
+				user.save()
+				# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
+				return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
+			else: 
+				# user does not exist
+				keyPairForm.add_error('username', 'Your username or password is incorrect. Please enter valid credentials in order to obtain a new key pair.')
+				return render(request, 'myapplication/memberHomePage.html', {'showKeyPairError':'showKeyPairError', 'keyPairForm':keyPairForm, 'passForm':ResetPassForm()})
+	else: 
+		keyPairForm = RequestNewKeyPairForm()
+	passForm = ResetPassForm()
+	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
+
+
+
 
