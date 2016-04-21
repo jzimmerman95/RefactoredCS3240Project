@@ -241,7 +241,7 @@ def view_shared_reports(request):
 		for r in ReportGroups.objects.filter(groupname=group.groupname):
 			rep = Report.objects.get(reportname=r.reportname)
 			sharedReports.append(rep)
-	return render(request, 'myapplication/viewSharedReports.html', {'reports': sharedReports})
+	return render(request, 'myapplication/viewSharedReports.html', {'reports': sharedReports, 'reportfiles':ReportFiles.objects.all()})
 
 def view_reports(request):
 	# SETTING DUMMY SESSION VARIABLES
