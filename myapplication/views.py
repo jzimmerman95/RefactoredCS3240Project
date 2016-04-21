@@ -124,6 +124,7 @@ def failed_login(request):
 
 def create_group(request):
 	form = CreateGroupForm()
+	form.setChoices(request)
 	return render(request, 'myapplication/createGroup.html', {'form': form,})
 
 def create_user_group(request):

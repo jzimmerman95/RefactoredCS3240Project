@@ -1,37 +1,56 @@
 <html>
 	<head>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-		<style type="text/css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<style type="text/css">
 		body {
 	    	background-color: lightblue;
+	    	margin-left: 1em;
 		}
-		p {
+		h3, p {
 			color: navy;
+			margin-left: 10px;
+			margin-bottom: 10px;
 		}
 		label {
-			float: left;
-		    width: 100px;
-		}
-		h3, h4, p {
 			color: navy;
-			margin-left: 10px;
 		}
-		.buttons {
-			margin-top: 10px;
-			margin-left: 10px;
+		.largefields label {
+			float: left;
+		    width: 130px;
 		}
-		</style>
+		.smallfields label {
+			float: left;
+			width: 35px;
+		}
+		div.buttonFormat1 {
+			float: left;
+			margin-right: 10px;
+			margin-top: 16.5px;
+			margin-left: 0.5em;
+		}
+		div.buttonFormat2 {
+			float:left;
+			margin-top: 3px;
+			margin-right: 10px;
+		}
+	</style>
 	</head>
 	<body>
 		<h3>Create a Group</h3>
 		<form id="createGroupForm" method="POST" action="create_user_group">
 			{% csrf_token %}
-				<div>
-					<label for="groupname">Group Name: </label>
-					<p style="color: red;">{{ form.groupname.errors|striptags }}</p>
-					{{ form.groupname }}
-				</div>
+			<div>
+				<label for="groupname">Group Name: </label>
+				<p style="color: red;">{{ form.groupname.errors|striptags }}</p>
+				{{ form.groupname }}
+			</div>
+			<label for="users">Please select users you'd like to add to this group: </label>
+			<div>
+				{{ form.users }}
+			</div>
+			<br>
 			<button type="submit" class="btn btn-default">Create Group</button>
 		</form>
 
