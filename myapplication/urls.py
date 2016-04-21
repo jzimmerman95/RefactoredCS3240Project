@@ -12,7 +12,6 @@ urlpatterns = [
     url(r'^failed_login$', views.failed_login, name='failed_login'),
     url(r'^create_group$', views.create_group, name='create_group'),
     url(r'^create_user_group$', views.create_user_group, name='create_user_group'),
-    url(r'^view_groups$', views.view_groups, name='view_groups'),
     url(r'^admin_delete_group$', views.admin_delete_group, name='admin_delete_group'),
     url(r'^admin_view_groups$', views.admin_view_groups, name='admin_view_groups'),
     url(r'^create_report$', views.create_report, name='create_report'),

@@ -143,11 +143,6 @@ def create_user_group(request):
 		groups = Groups.objects.all().filter(username=user)
 		return render(request, 'myapplication/ViewGroups.html', {'groups': groups})
 
-def view_groups(request):
-	user = request.session['username']
-	groups = Groups.objects.all().filter(username=user)
-	return render(request, 'myapplication/ViewGroups.html', {'groups': groups})
-
 def admin_view_groups(request):
 	return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all()})
 
