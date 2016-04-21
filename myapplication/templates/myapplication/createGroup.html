@@ -1,12 +1,39 @@
 <html>
-	<head></head>
+	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+		<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		p {
+			color: navy;
+		}
+		label {
+			float: left;
+		    width: 100px;
+		}
+		h3, h4, p {
+			color: navy;
+			margin-left: 10px;
+		}
+		.buttons {
+			margin-top: 10px;
+			margin-left: 10px;
+		}
+		</style>
+	</head>
 	<body>
-		<form action="create_user_group" method="POST">
+		<h3>Create a Group</h3>
+		<form id="createGroupForm" method="POST" action="create_user_group">
 			{% csrf_token %}
-			<label for="groupname">Group Name: </label>
-			<input type="text" name="groupname"><br>
-
-			<input type="submit" value="Create Group"><br>
+				<div>
+					<label for="groupname">Group Name: </label>
+					<p style="color: red;">{{ form.groupname.errors|striptags }}</p>
+					{{ form.groupname }}
+				</div>
+			<button type="submit" class="btn btn-default">Create Group</button>
 		</form>
+
 	</body>
 </html>

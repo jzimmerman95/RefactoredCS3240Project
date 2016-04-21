@@ -89,6 +89,15 @@ class RenameFolderForm(forms.Form):
 class SearchReportsForm(forms.Form):
 	searchTerms=forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class':'form-control', 'id':'searchtermsid', 'placeholder':'reportname:myreport OR owner:myname OR availability:private'}))
 
+class CreateGroupForm(ModelForm):
+	class Meta:
+		model = Groups
+		fields = ('groupname',)
+
+	def __init__(self, *args, **kwargs):
+		super(CreateGroupForm, self).__init__(*args, **kwargs)
+		self.fields['groupname'].initial = ''
+	
 class ResetPassForm(forms.Form):
 	oldpwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
 	newpwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
