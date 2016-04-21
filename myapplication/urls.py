@@ -38,5 +38,5 @@ urlpatterns = [
     url(r'^view_shared_reports$', views.view_shared_reports, name='view_shared_reports'),
     url(r'^reset_pass$', views.reset_pass, name='reset_pass'),
     url(r'^request_private_key$', views.request_private_key, name='request_private_key'),
-    url(r'^logout$', views.logout, name='logout'),
+    url(r'^log_out$', views.log_out, name='log_out'),
 ]

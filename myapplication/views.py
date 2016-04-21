@@ -5,7 +5,8 @@ from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, Crea
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
 # for authentication
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 # imports for encrytion
 from Crypto.PublicKey import RSA
 from Crypto import Random
@@ -68,6 +69,9 @@ def sign_user_up(request):
 					request.session['email'] = email
 					request.session['role'] = 'user'
 					request.session['loggedin'] = True
+					# # use django's built-in login function to log the user in
+					user = authenticate(username=username, password=pwd)
+					login(request, user)
 					# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
 					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
 				else: 
@@ -98,6 +102,8 @@ def sign_user_in(request):
 			request.session['publickey'] = userInf.publickey
 			request.session['role'] = userInf.role
 			request.session['loggedin'] = True
+			# use django's built-in login method to log the user in
+			login(request, user)
 			if userInf.role == 'sitemanager':
 				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
 			else: 
@@ -904,25 +910,9 @@ def remove_report_folder(request):
 	else:
 		return render(request, 'myapplication/homePage.html', {})
 
-def logout(request):
-	if 'loggedin' in request.session:
-		request.session.flush()
-		# user = getattr(request, 'user', None)
-		# if hasattr(user, 'is_authenticated') and not user.is_authenticated:
-		# 	user = None
-		# user_logged_out.send(sender=user.__class__, request=request, user=user)
-		# language = request.session.get(LANGUAGE_SESSION_KEY)
-		# request.session.flush()
-
-		# if language is not None:
-		# 	request.session[LANGUAGE_SESSION_KEY] = language
-
-		# if hasattr(request, 'user'):
-		# 	from django.contrib.auth.models import AnonymousUser
-		# 	request.user = AnonymousUser()
-		return render(request, 'myapplication/signIn.html', {})
-	else: 
-		return render(request, 'myapplication/homePage.html', {})
+def log_out(request):
+	logout(request)
+	return render(request, 'myapplication/signIn.html', {})
 
 def download_unencrypted_files(request):
 	if 'loggedin' in request.session:
