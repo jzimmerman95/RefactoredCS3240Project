@@ -7,6 +7,7 @@ from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders,
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
 # imports for encrytion
 from Crypto.PublicKey import RSA
 from Crypto import Random
@@ -87,6 +88,7 @@ def sign_user_up(request):
 def sign_in(request):
 	return render(request, 'myapplication/signIn.html', {})
 
+# @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def sign_user_in(request):
 	username = request.POST.get('username', '')
 	pwd = request.POST.get('password', '')
@@ -105,16 +107,19 @@ def sign_user_in(request):
 			# use django's built-in login method to log the user in
 			login(request, user)
 			if userInf.role == 'sitemanager':
-				return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
+				return HttpResponseRedirect('admin_home_page')
+				#return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
 			else: 
-				passForm = ResetPassForm()
-				keyPairForm = RequestNewKeyPairForm()
-				return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm}, context_instance=RequestContext(request))
+				return HttpResponseRedirect('member_home_page')
+				# passForm = ResetPassForm()
+				# keyPairForm = RequestNewKeyPairForm()
+				# return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm}, context_instance=RequestContext(request))
 		else:
 			return render(request, 'myapplication/failedLogin.html', {}, )
 	else: 
 		return render(request, 'myapplication/failedLogin.html', {})
 
+# @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def member_home_page(request):
 	if 'loggedin' in request.session:
 		# the user is logged in 
@@ -122,15 +127,16 @@ def member_home_page(request):
 		keyPairForm = RequestNewKeyPairForm()
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm}, context_instance=RequestContext(request))
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
+# @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_home_page(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
 		return render(request, 'myapplication/adminHomePage.html', {}, context_instance=RequestContext(request))
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_manage_reports(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -138,7 +144,7 @@ def admin_manage_reports(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def failed_login(request):
 	return render(request, 'myapplication/failedLogin.html', {})	
@@ -148,7 +154,7 @@ def create_group(request):
 		form = CreateGroupForm()
 		return render(request, 'myapplication/createGroup.html', {'form': form,})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def create_user_group(request):
 	if 'loggedin' in request.session: 
@@ -171,7 +177,7 @@ def create_user_group(request):
 			groups = Groups.objects.all().filter(username=user)
 			return render(request, 'myapplication/ViewGroups.html', {'groups': groups})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_view_groups(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -179,7 +185,7 @@ def admin_view_groups(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_delete_group(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -191,7 +197,7 @@ def admin_delete_group(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def create_report(request):
 	if 'loggedin' in request.session:
@@ -244,7 +250,7 @@ def create_report(request):
 			form.setChoices(request)
 		return render(request, 'myapplication/createReport.html', {'form': form})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_view_reports(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -252,7 +258,7 @@ def admin_view_reports(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_manage_users(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -260,7 +266,7 @@ def admin_manage_users(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_suspend_user(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -277,7 +283,7 @@ def admin_suspend_user(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_make_sitemanager(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -299,7 +305,7 @@ def admin_make_sitemanager(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def view_shared_reports(request):
 	if 'loggedin' in request.session:
@@ -311,7 +317,7 @@ def view_shared_reports(request):
 				sharedReports.append(rep)
 		return render(request, 'myapplication/viewSharedReports.html', {'reports': sharedReports, 'reportfiles':ReportFiles.objects.all()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def view_reports(request):
 	if 'loggedin' in request.session:
@@ -393,7 +399,7 @@ def view_reports(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def view_reports_folder(request):
 	if 'loggedin' in request.session:
@@ -405,7 +411,7 @@ def view_reports_folder(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def rename_folder(request):
 	if 'loggedin' in request.session:
@@ -445,7 +451,7 @@ def rename_folder(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def delete_folder(request):
 	if 'loggedin' in request.session:
@@ -461,7 +467,7 @@ def delete_folder(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReportsFolder.html', {'renameForm': renameForm, 'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def admin_delete_report(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
@@ -496,7 +502,7 @@ def admin_delete_report(request):
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def delete_report(request):
 	if 'loggedin' in request.session:
@@ -557,7 +563,7 @@ def delete_report(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def add_files(request):
 	if 'loggedin' in request.session: 
@@ -612,7 +618,7 @@ def add_files(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def remove_files(request):
 	if 'loggedin' in request.session:
@@ -676,7 +682,7 @@ def remove_files(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def edit_groups(request):
 	if 'loggedin' in request.session:
@@ -709,14 +715,14 @@ def edit_groups(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def manage_reports(request):
 	if 'loggedin' in request.session: 
 		searchForm = SearchReportsForm();
 		return render(request, 'myapplication/manageReports.html', {'searchForm':searchForm})
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def create_folder(request):
 	if 'loggedin' in request.session: 
@@ -761,7 +767,7 @@ def create_folder(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReportsFolder.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'form': form}, context_instance=RequestContext(request))
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def add_reports_folder(request):
 	if 'loggedin' in request.session:
@@ -860,7 +866,7 @@ def add_reports_folder(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else: 
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def remove_report_folder(request):
 	if 'loggedin' in request.session:
@@ -908,7 +914,7 @@ def remove_report_folder(request):
 			folderInfo.append(tup)
 		return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def log_out(request):
 	logout(request)
@@ -929,7 +935,7 @@ def download_unencrypted_files(request):
 		response['Content-Disposition'] = 'attachment; filename='+filename
 		return response
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def search_reports(request):
 	if 'loggedin' in request.session:
@@ -1054,7 +1060,7 @@ def search_reports(request):
 			pass 
 		HttpResponseRedirect('manage_reports')
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def reset_pass(request):
 	if 'loggedin' in request.session: 
@@ -1087,7 +1093,7 @@ def reset_pass(request):
 		keyPairForm = RequestNewKeyPairForm()
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 def request_private_key(request):
 	if 'loggedin' in request.session: 
@@ -1118,7 +1124,7 @@ def request_private_key(request):
 		passForm = ResetPassForm()
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
 	else:
-		return render(request, 'myapplication/homePage.html', {})
+		return HttpResponseRedirect('home_page')
 
 
 
