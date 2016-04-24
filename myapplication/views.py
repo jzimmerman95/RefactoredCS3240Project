@@ -120,6 +120,7 @@ def sign_user_in(request):
 		return render(request, 'myapplication/failedLogin.html', {})
 
 # @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+#@login_required
 def member_home_page(request):
 	if 'loggedin' in request.session:
 		# the user is logged in 
