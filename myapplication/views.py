@@ -153,6 +153,7 @@ def failed_login(request):
 def create_group(request):
 	if 'loggedin' in request.session:
 		form = CreateGroupForm()
+		form.setChoices(request)
 		return render(request, 'myapplication/createGroup.html', {'form': form,})
 	else: 
 		return HttpResponseRedirect('home_page')
