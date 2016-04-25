@@ -31,20 +31,23 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				<th></th>
 			</tr>
 			{% for group in groups %}
-					<tr> 
-						<td class="gName">{{ group.groupname }}</td>
-						<td class="gOwner">{{ group.owner }}</td>
-						<td>
-	<!-- 						<div>
-								<button onclick="return getId(this.id);" id="{{group.groupname}}" class="button" data-toggle="modal" data-target="#deleteGroup" style="font-size:8pt; margin-top: 7px;">Delete</button>
-							</div> -->
-						</td>
-					</tr>
+				<tr> 
+					<td class="gName">{{ group.groupname }}</td>
+					<td class="gOwner">{{ group.owner }}</td>
+					<td>
+						<div>
+							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="button" data-toggle="modal" data-target="#deleteGroup" style="font-size:8pt; margin-top: 7px;">Delete</button>
+						</div>
+						<div>
+							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="buttonModifyGroup" data-toggle="modal" data-target="#editGroup" style="font-size:8pt; margin-top: 7px;">Modify Group Name / Add Users</button>
+						</div>
+					</td>
+				</tr>
 			{% endfor %}
 		</table>
 	</div>
 	<div class="buttons">
-		<a class="btn btn-primary btn-lg" href="admin_home_page">Return to Admin Home Page</a>
+		<a class="btn btn-primary btn-lg" href="member_home_page">Return to Member Home Page</a>
 	</div>
 	<div class="modal fade" id="deleteGroup" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
 		<div class="modal-dialog" role="document">
@@ -54,10 +57,37 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						<h3 class="modal-title" id="myModalLabel">Delete Group</h3>
 					</div>
-					<form id="deleteGroupForm" method="POST" action="admin_delete_group">
+					<form id="deleteGroupForm" method="POST" action="delete_group">
 						{% csrf_token %}
 						<h4>Are you sure you would like to delete this group?</h4>
 						<button type="submit" class="btn btn-default" onclick="modal">Delete Group</button>
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="editGroup" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Modify Group</h3>
+					</div>
+					<form id="modifyForm" method="POST" action="view_groups">
+						{% csrf_token %}
+						<div class="form-group">
+							<div>
+								<label for="newgroupname">Group Name: </label>
+								<p style="color: red;">{{ form.groupname.errors|striptags }}</p>
+								{{ form.groupname }}
+							</div>
+							
+						</div>
+						<button type="submit" class="btn btn-default" onclick="modal">Modify Group</button>
 					</form>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -80,11 +110,42 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			});
 		});
 	</script>
-		<script type="text/javascript">
+	<script type="text/javascript">
 		var ID;
 		function getId(id) {
 			ID = id;
 		}
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+			$('#modifyForm').submit(function(){
+				if ($("#modifyForm").data("changed")) {
+					var RLIST = {{ groupNames|safe }};
+					var newName = document.getElementById('groupnameid').value;
+
+					for (i = 0; i < RLIST.length; i++) {
+						if (RLIST[i] == newName) {
+							alert("A report with that name already exists. Please enter a different name.");
+							return false;
+						}
+					}
+				} 
+				$("<input type='text' value='' />")
+			    	.attr("id", ID)
+			    	.attr("name", "oldgroupname")
+			    	.attr("value", ID)
+			    	.attr("type", "hidden")
+			    	.appendTo("#modifyForm");
+				return true;
+			});
+		});
+	</script>
+	<script type="text/javascript">
+		$(".buttonModifyGroup").click(function() {
+		    var gName = $(this).closest("tr").find(".gName").text();	    
+		    document.getElementById('groupnameid').value = gName;
+		});
 	</script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 </body>
