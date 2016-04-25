@@ -82,8 +82,8 @@ def sign_user_up(request):
 		form = UserSignUpForm()
 	return render(request, 'myapplication/signUp.html', {'form': form})
 
-# def show_pkey(request):
-# 	return render(request, 'myapplication/showPrivateKey.html', {})
+def show_pkey(request):
+	return render(request, 'myapplication/showPrivateKey.html', {})
 
 def sign_in(request):
 	return render(request, 'myapplication/signIn.html', {})
