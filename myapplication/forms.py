@@ -90,7 +90,7 @@ class SearchReportsForm(forms.Form):
 	searchTerms=forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class':'form-control', 'id':'searchtermsid', 'placeholder':'reportname:myreport OR owner:myname OR availability:private'}))
 
 class CreateGroupForm(forms.Form):
-	groupname=forms.CharField(max_length=100)
+	groupname = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'id':'groupnameid'}))
 	users = forms.MultipleChoiceField(widget=forms.SelectMultiple())
 
 	def __init__(self, *args, **kwargs):

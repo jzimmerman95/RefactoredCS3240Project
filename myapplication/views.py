@@ -150,12 +150,48 @@ def create_user_group(request):
 def admin_view_groups(request):
 	return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all()})
 
+def manage_groups(request):
+	user = request.session['username']
+	groups = Groups.objects.all().filter(username=user)
+	form = CreateGroupForm(request.POST)
+	groupNames = []
+	for group in Groups.objects.all():
+		groupNames.append(group.groupname)
+	return render(request, 'myapplication/ViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'groupNames': groupNames})
+
+def view_groups(request):
+	if request.method == 'POST':
+		form = CreateGroupForm(request.POST)
+		if form.is_valid():
+			oldgroupname = request.POST.get('oldgroupname')
+			groupname = request.POST.get('groupname')
+
+			g = Groups.objects.get(groupname=oldgroupname)
+			g.groupname = groupname
+			g.save()
+	else:
+		pass 
+
+	groupNames = []
+	for group in Groups.objects.all():
+		groupNames.append(group.groupname)
+	form = CreateGroupForm()
+	return render(request, 'myapplication/viewGroups.html', {'form': form, 'groups': Groups.objects.all(), 'groupNames': groupNames})	
+
+
 def admin_delete_group(request):
 	if request.method == "POST":
 		reportToDelete = request.POST.get('deleteGroup')
 		inst = Groups.objects.get(groupname=reportToDelete)
 		inst.delete()
 	return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all()})
+
+def delete_group(request):
+	if request.method == "POST":
+		reportToDelete = request.POST.get('deleteGroup')
+		inst = Groups.objects.get(groupname=reportToDelete)
+		inst.delete()
+	return render(request, 'myapplication/viewGroups.html', {'groups':Groups.objects.all()})
 
 def create_report(request):
 	if request.method == 'POST':
