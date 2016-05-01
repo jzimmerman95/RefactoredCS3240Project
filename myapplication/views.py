@@ -78,7 +78,11 @@ def sign_user_up(request):
 					user = authenticate(username=username, password=pwd)
 					login(request, user)
 					# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
-					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
+					# format private key
+					privateKey = str(key.exportKey())
+					#privateKey = privateKey.strip()
+					privateKey = privateKey.replace(' ', '\r\n')
+					return render(request, 'myapplication/showPrivateKey.html', {'pkey':privateKey})
 				else: 
 					form.add_error('fname', 'Your passwords do not match. Please make sure that your passwords match.')
 					return render(request, 'myapplication/signUp.html', {'form':form})
@@ -777,17 +781,18 @@ def create_folder(request):
 				# username = "username1"
 				foldername = request.POST.get('foldername')
 				reports = request.POST.get('reports')
-				reportList = reports.split(',')
 				error = False
-				for r in reportList:
-					try:
-						rep = Report.objects.get(reportname=r.strip())
-						if rep.owner != username:
-							# the existing report does not belong to the user - send form back with error
+				if reports != '':
+					reportList = reports.split(',')
+					for r in reportList:
+						try:
+							rep = Report.objects.get(reportname=r.strip())
+							if rep.owner != username:
+								# the existing report does not belong to the user - send form back with error
+								error = True
+						except ObjectDoesNotExist:
+							# at least one report does not exist - send form back with error 
 							error = True
-					except ObjectDoesNotExist:
-						# at least one report does not exist - send form back with error 
-						error = True
 				if error == False:
 					# you can make the folder with reports
 					folder_obj = Folders(foldername=foldername, reports=reports, owner=username)
