@@ -80,7 +80,7 @@ def sign_user_up(request):
 					# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
 					# format private key
 					privateKey = str(key.exportKey())
-					#privateKey = privateKey.strip()
+					privateKey = privateKey.strip()
 					privateKey = privateKey.replace(' ', '\r\n')
 					return render(request, 'myapplication/showPrivateKey.html', {'pkey':privateKey})
 				else: 
@@ -1234,6 +1234,7 @@ def decrypt_message(request):
 		if '\r\n' not in line:
 			line=line+'\r\n'
 	privateKey = ''.join(privateKey)
+	print(privateKey)
 	try: 
 		privateKey = RSA.importKey(privateKey)
 	except:
