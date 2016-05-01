@@ -1,3 +1,7 @@
+<?php
+	header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+?>
 <html>
 	<head>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -41,12 +45,9 @@
 		</div>
 		<div class="buttons">
 			<button class="btn btn-primary btn-md" data-toggle="modal" data-target="#requestKeyPair">Request New Key Pair</button>
-			<!-- <form action="request_private_key">
-				<button class="btn btn-primary btn-md" type="submit">Request New Private Key</button>
-			</form> -->
 		</div>
 		<div class="buttons">
-			<form action="logout">
+			<form action="log_out">
 				<input class="btn btn-primary btn-md" type="submit" value="Log Out">
 			</form>
 		</div>
