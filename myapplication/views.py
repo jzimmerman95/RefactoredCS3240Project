@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm, MessageForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups, Messages, GroupUsers
 # for authentication
 from django.contrib.auth.models import User
