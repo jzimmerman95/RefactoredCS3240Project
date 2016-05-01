@@ -194,7 +194,7 @@ def create_user_group(request):
 				members[group.groupname].append(member.username)
 
 		if request.session['role']=='sitemanager':
-			return render(request, 'myapplication/adminViewGroups.html', {'form': form, 'members': members})
+			return render(request, 'myapplication/adminViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'members': members})
 		else:
 			user = request.session['username']
 			groups = Groups.objects.all().filter(username=user)
