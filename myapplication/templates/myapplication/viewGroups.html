@@ -28,12 +28,22 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			<tr>
 				<th>Group Name</th>
 				<th>Owner</th>
+				<th>Users</th>
 				<th></th>
 			</tr>
 			{% for group in groups %}
 				<tr> 
 					<td class="gName">{{ group.groupname }}</td>
 					<td class="gOwner">{{ group.owner }}</td>
+					<td class="gUsers">
+						{% for key, value in members.items %}
+							{% ifequal key group.groupname %}
+								{% for val in value %}
+								<p>{{ val }}</p>
+								{% endfor %}
+							{% endifequal %}
+						{% endfor %}
+					</td>
 					<td>
 						<div>
 							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="button" data-toggle="modal" data-target="#deleteGroup" style="font-size:8pt; margin-top: 7px;">Delete</button>
@@ -85,7 +95,10 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 								<p style="color: red;">{{ form.groupname.errors|striptags }}</p>
 								{{ form.groupname }}
 							</div>
-							
+							<label for="users">Please select users you'd like to add to this group: </label>
+							<div>
+								{{ form.users }}
+							</div>
 						</div>
 						<button type="submit" class="btn btn-default" onclick="modal">Modify Group</button>
 					</form>

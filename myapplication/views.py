@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
 from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm
-from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
+from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups, GroupUsers
 # for authentication
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -139,13 +139,26 @@ def create_user_group(request):
 	else:
 		group = Groups(groupname=group_name, owner=user, username=user)
 		group.save()
+		users = request.POST.getlist('users')
+		for user in users:
+			group_users_obj = GroupUsers(groupname=group.groupname, username=user)
+			group_users_obj.save()
+
+	form = CreateGroupForm(request.POST)
+	form.setChoices(request)
+
+	members = {}
+	for group in Groups.objects.all():
+		members[group.groupname] = []
+		for member in GroupUsers.objects.filter(groupname=group.groupname):
+			members[group.groupname].append(member.username)
 
 	if request.session['role']=='sitemanager':
-		return render(request, 'myapplication/adminViewGroups.html', {})
+		return render(request, 'myapplication/adminViewGroups.html', {'form': form, 'members': members})
 	else:
 		user = request.session['username']
 		groups = Groups.objects.all().filter(username=user)
-		return render(request, 'myapplication/ViewGroups.html', {'groups': groups})
+		return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'members': members})
 
 def admin_view_groups(request):
 	return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all()})
@@ -154,10 +167,16 @@ def manage_groups(request):
 	user = request.session['username']
 	groups = Groups.objects.all().filter(username=user)
 	form = CreateGroupForm(request.POST)
+	form.setChoices(request)
 	groupNames = []
+	members = {}
 	for group in Groups.objects.all():
 		groupNames.append(group.groupname)
-	return render(request, 'myapplication/ViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'groupNames': groupNames})
+		members[group.groupname] = []
+		for member in GroupUsers.objects.filter(groupname=group.groupname):
+			members[group.groupname].append(member.username)
+
+	return render(request, 'myapplication/ViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'groupNames': groupNames, 'members': members})
 
 def view_groups(request):
 	if request.method == 'POST':
@@ -172,10 +191,16 @@ def view_groups(request):
 	else:
 		pass 
 
+	users = request.POST.getlist('users')
+	for user in users:
+		group_users_obj = GroupUsers(groupname=groupname, username=user.username)
+		group_users_obj.save()
+
 	groupNames = []
 	for group in Groups.objects.all():
 		groupNames.append(group.groupname)
 	form = CreateGroupForm()
+	form.setChoices(request)
 	return render(request, 'myapplication/viewGroups.html', {'form': form, 'groups': Groups.objects.all(), 'groupNames': groupNames})	
 
 
@@ -190,8 +215,18 @@ def delete_group(request):
 	if request.method == "POST":
 		reportToDelete = request.POST.get('deleteGroup')
 		inst = Groups.objects.get(groupname=reportToDelete)
+		if GroupUsers.objects.filter(groupname=reportToDelete).exists():
+			for user in GroupUsers.objects.filter(groupname=reportToDelete):
+				user.delete()
 		inst.delete()
-	return render(request, 'myapplication/viewGroups.html', {'groups':Groups.objects.all()})
+
+	members = {}
+	for group in Groups.objects.all():
+		members[group.groupname] = []
+		for member in GroupUsers.objects.filter(groupname=group.groupname):
+			members[group.groupname].append(member.username)
+
+	return render(request, 'myapplication/viewGroups.html', {'groups':Groups.objects.all(), 'members': members})
 
 def create_report(request):
 	if request.method == 'POST':
