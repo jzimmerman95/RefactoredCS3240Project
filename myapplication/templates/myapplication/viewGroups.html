@@ -28,18 +28,34 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			<tr>
 				<th>Group Name</th>
 				<th>Owner</th>
+				<th>Users</th>
 				<th></th>
 			</tr>
 			{% for group in groups %}
 				<tr> 
 					<td class="gName">{{ group.groupname }}</td>
 					<td class="gOwner">{{ group.owner }}</td>
+					<td class="gUsers">
+						{% for key, value in members.items %}
+							{% ifequal key group.groupname %}
+								{% for val in value %}
+								<p>{{ val }}</p>
+								{% endfor %}
+							{% endifequal %}
+						{% endfor %}
+					</td>
 					<td>
 						<div>
 							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="button" data-toggle="modal" data-target="#deleteGroup" style="font-size:8pt; margin-top: 7px;">Delete</button>
 						</div>
 						<div>
-							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="buttonModifyGroup" data-toggle="modal" data-target="#editGroup" style="font-size:8pt; margin-top: 7px;">Modify Group Name / Add Users</button>
+							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="buttonModifyGroup" data-toggle="modal" data-target="#editGroup" style="font-size:8pt; margin-top: 7px;">Modify Group Name</button>
+						</div>
+						<div>
+							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="buttonModifyGroup" data-toggle="modal" data-target="#addUsers" style="font-size:8pt; margin-top: 7px;">Add Users</button>
+						</div>
+						<div>
+							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="buttonModifyGroup" data-toggle="modal" data-target="#deleteUsers" style="font-size:8pt; margin-top: 7px;">Delete Users</button>
 						</div>
 					</td>
 				</tr>
@@ -85,9 +101,64 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 								<p style="color: red;">{{ form.groupname.errors|striptags }}</p>
 								{{ form.groupname }}
 							</div>
-							
+							<label for="users">Please select users you'd like to add to this group: </label>
+							<div>
+								{{ form.users }}
+							</div>
 						</div>
 						<button type="submit" class="btn btn-default" onclick="modal">Modify Group</button>
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="addUsers" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Add Users to Group</h3>
+					</div>
+					<form id="addUsersForm" method="POST" action="add_users_to_group">
+						{% csrf_token %}
+						<div class="form-group">
+							<label for="users">Please select users you'd like to add to this group: </label>
+							<div>
+								{{ form.users }}
+							</div>
+						</div>
+						<button type="submit" class="btn btn-default" onclick="modal">Add Users</button>
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="deleteUsers" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h3 class="modal-title" id="myModalLabel">Delete Users from Group</h3>
+					</div>
+					<form id="deleteUsersForm" method="POST" action="delete_users_from_group">
+						{% csrf_token %}
+						<div class="form-group">
+							<label for="users">Please select users you'd like to delete from this group: </label>
+							<div>
+								{{ form.users }}
+							</div>
+						</div>
+						<button type="submit" class="btn btn-default" onclick="modal">Delete Users</button>
 					</form>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -106,6 +177,32 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			    	.attr("value", ID)
 			    	.attr("type", "hidden")
 			    	.appendTo("#deleteGroupForm");
+				return true;
+			});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#addUsers').submit(function(){
+				$("<input type='text' value='' />")
+			    	.attr("id", ID)
+			    	.attr("name", "addUsers")
+			    	.attr("value", ID)
+			    	.attr("type", "hidden")
+			    	.appendTo("#addUsersForm");
+				return true;
+			});
+		});
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#deleteUsers').submit(function(){
+				$("<input type='text' value='' />")
+			    	.attr("id", ID)
+			    	.attr("name", "deleteUsers")
+			    	.attr("value", ID)
+			    	.attr("type", "hidden")
+			    	.appendTo("#deleteUsersForm");
 				return true;
 			});
 		});

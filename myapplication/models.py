@@ -18,6 +18,10 @@ class Groups(models.Model):
 	owner = models.CharField(max_length=200, default='none')
 	username = models.CharField(max_length=200, default='none')
 
+class GroupUsers(models.Model):
+	groupname = models.CharField(max_length=100)
+	username = models.CharField(max_length=100)
+
 CHOICES = (  
 	('yes', 'yes'),
 	('no', 'no'),
