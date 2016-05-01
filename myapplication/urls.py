@@ -38,4 +38,9 @@ urlpatterns = [
     url(r'^view_shared_reports$', views.view_shared_reports, name='view_shared_reports'),
     url(r'^reset_pass$', views.reset_pass, name='reset_pass'),
     url(r'^request_private_key$', views.request_private_key, name='request_private_key'),
+    url(r'^messages$', views.messages, name='messages'),
+    url(r'^new_message$', views.new_message, name='new_message'),
+    url(r'^delete_message$', views.delete_message, name='delete_message'),
+    url(r'^display_message$', views.display_message, name='display_message'),
+    url(r'^decrypt_message$', views.decrypt_message, name='decrypt_message'),
 ]

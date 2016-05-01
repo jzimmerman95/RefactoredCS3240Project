@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <style type="text/css">
+      body {
+      background-color: lightblue;
+      }
+      label {
+      float: left;
+          width: 150px;
+      }
+      h3, h4, p {
+      color: navy;
+      margin-left: 10px;
+      }
+      .buttons {
+      margin-left: 10px;
+      }
+      </style>
+    </head>
+  <body>
+    <h3>Compose Message:</h3><br>
+    {%ifnotequal receiverError None%}
+    <p style="color:red">{{receiverError}}</p>
+    {%endifnotequal%}
+    <div style="margin-left:10px;">
+          <form action="new_message" method="POST">
+	    {% csrf_token %}
+	    <label for="subject">Subject: </label>
+	    <input type="text" name="subject"><br>
+
+	    <label for="recipient_username">Recipient: </label>
+	    <input type="text" name="recipient_username"><br>
+
+	    <label for="body">Message: </label>
+	    <input type="text" name="body"><br>
+
+	    <label for="encrypted">Encrypt: </label>
+	    <input type="checkbox" name="encrypted"><br>
+
+	    <input style="margin-top: 10px;" class="btn btn-primary btn-sm" type="submit" value="Send Message"><br>
+	  </form>
+	  </div>
+    <div class="buttons">
+      <a class="btn btn-primary btn-sm" href="home_page">Home</a>
+      </div>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	</body>
+</html>

@@ -1,14 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm
-from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm, MessageForm
+from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups, Messages
 # for authentication
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 # imports for encrytion
 from Crypto.PublicKey import RSA
 from Crypto import Random
+from base64 import b64decode
 from django.core.exceptions import ObjectDoesNotExist
 # to pass session variables to a template
 from django.template import RequestContext
@@ -16,6 +17,8 @@ from django.template import RequestContext
 from django.core.files import File 
 import os
 import mimetypes
+from django.contrib import messages
+from django.utils import timezone
 
 
 # Create your views here.
@@ -27,7 +30,7 @@ def home_page(request):
 		# generate key
 		random_generator = Random.new().read
 		key = RSA.generate(1024, random_generator)
-		publicKey = key.publickey() #.exportKey()
+		publicKey = key.publickey().exportKey()
 		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey=publicKey, role='sitemanager', numsitemanagersmade=0)
 		user_inf_obj.save()
 		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
@@ -55,7 +58,7 @@ def sign_user_up(request):
 					# generate key
 					random_generator = Random.new().read
 					key = RSA.generate(1024, random_generator)
-					publicKey = key.publickey() #.exportKey()
+					publicKey = key.publickey().exportKey()
 					# insert the user into the  model you created, including the generated public key
 					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
@@ -826,26 +829,6 @@ def remove_report_folder(request):
 		folderInfo.append(tup)
 	return render(request, 'myapplication/viewReports.html', {'folderInfo': folderInfo, 'folders': Folders.objects.all(), 'createFolderForm': createFolderForm, 'folderName': request.POST.get('foldername'), 'form': form, 'fileForm': fileForm, 'groupForm': groupForm, 'reports': reports, 'reportfiles': ReportFiles.objects.all(), 'reportgroups': ReportGroups.objects.all(), 'reportNames': reportNames}, context_instance=RequestContext(request))	
 
-def logout(request):
-    
-    user = getattr(request, 'user', None)
-    if hasattr(user, 'is_authenticated') and not user.is_authenticated:
-        user = None
-    user_logged_out.send(sender=user.__class__, request=request, user=user)
-
-    language = request.session.get(LANGUAGE_SESSION_KEY)
-
-    request.session.flush()
-
-    if language is not None:
-        request.session[LANGUAGE_SESSION_KEY] = language
-
-    if hasattr(request, 'user'):
-        from django.contrib.auth.models import AnonymousUser
-        request.user = AnonymousUser()
-
-    return render(request, 'myapplication/signIn.html')
-
 def download_unencrypted_files(request):
 	filename = request.POST.get('fileToDownload')
 	f = ReportFiles.objects.get(uploadfile=filename).uploadfile
@@ -1038,6 +1021,71 @@ def request_private_key(request):
 	passForm = ResetPassForm()
 	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
 
+def messages(request):
+	inbox_list = Messages.objects.order_by('-created')
+	personal_inbox = []
+	for m in inbox_list:
+		if m.recipient_username == request.session.get('username'):
+			personal_inbox.append(m)
+	context = {'personal_inbox': personal_inbox}
+	return render(request, 'myapplication/messages.html', context)
 
+def new_message(request):
+	if request.method == "POST":
+		form = MessageForm(request.POST)
+		if form.is_valid():
+			print("valid form")
+			sender = request.session.get('username')
+			subject = request.POST['subject']
+			body = request.POST['body']
+			#created = timezone.now
+			receiver = request.POST['recipient_username']
+			try: 
+				rec = UserInformation.objects.get(username=receiver)
+			except ObjectDoesNotExist:
+				return render(request, 'myapplication/new_message.html', {'receiverError':'That user does not exist. Please type in a valid recipient username'})
+			if 'encrypted' in request.POST.keys():
+				encrypted=request.POST['encrypted']
+				public_key = UserInformation.objects.get(username=receiver).publickey
+				public_key = RSA.importKey(public_key)
+				enc_data = public_key.encrypt(str.encode(body), 32)
+				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=enc_data, encrypted=""+encrypted)
+				msg_obj.save()
+			else:
+				
+			#check to see if receiver exists
+				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=body, encrypted=False)
+				msg_obj.save()
 
+			return HttpResponseRedirect('messages')
+			#return render(request, 'myapplication/messages.html', {})
 
+	else:
+		form = MessageForm()
+	return render(request, 'myapplication/new_message.html', {'form': form})
+
+def delete_message(request):
+	ID = request.POST['deleteMessageID']
+	Messages.objects.get(id = ID).delete()
+	return HttpResponseRedirect('messages')
+	#return render(request, 'myapplication/messages.html', {})
+
+def display_message(request):
+	ID = request.POST['id']
+	return render(request, 'myapplication/display_message.html', {'message':Messages.objects.get(id = ID)})
+
+def decrypt_message(request):
+	# TODO: UNENCRYPTE THE MESSAGE, PASS TO VIEW
+	ID = request.POST['decryptMessageID']
+	privateKey = request.POST['privateKey']
+
+	# # decode
+	# body = Messages.objects.get(id=ID).body
+	# key64 = b'MIICXQIBAAKBgQDB7BJpputV7IEBctW1gT2+hlqCDnuq8bg2jJ8gqZIg1fyDPv0R2a1MEjm00RXHycFebUPOnhxNNzr/29LNln81BuDyDII6jhikr4qrqKmG0FbDXr6fCdMXnDrwXrylk4svHFc7XclJIcsdyRIPRP2lDpS8IaCxRlR7GUqKNA715QIDAQABAoGBAIPemu7JmYMGnvtzMayJxIkJKAcE/kfStCg0HAnEBiDaIyrE7Kb01YnDYwZ4oE0J/7rMpq2cizZe9noC7CjtzHX9j3ek2ptD8vKM0/D7ew9q62K0zvsdXbJJWaZqltdpYOSSTxi8FSqcNXRo1T4xJcJ7wKSZLBwnWXX85tEAMb3JAkEA10Pzk86LSC7ZsQGbpaIqyzdj0OcoTeajK6nG/8kQJhowlkRQWzE4KPH4zw+b/VFC4CvVKOemLmaG5W/1TMM4RwJBAOaeMYNuSA532Kq/Eko2NGhSYnuH2TBvqApXjyiIzB+U35P9DJuB73DEAHy6hqLQAwBPpfhiteW0Ir2eyL7i4nMCQBOjjGZQsp5MP+oJJoUO7W6KyB136VJqFzrVi2Usl7+SJhqfcuFO9TuvD678UpPixQIknZbUw3F6QxZNh4iQSuMCQEIfo6TCryhu1pIGnRDoP9iVnqU6y1xm93CXsHV328dGYWDGUqIX/HaBzH324Xm3WNTzAWyZqPwGzVs/NuH8nd8CQQCuYY3JHyhMKLDNtZng5xjcHcGUpZOVMZaa8MhU3S+FQgFwx4btNn04yVgUDqjP7pgWfhuxIz2+bXEpybw2a155'
+	# keyDER = b64decode(key64)
+	# keyPriv = RSA.importKey(keyDER)
+	# # privateKey = ' '.join(privateKey)
+	# # privateKey = RSA.importKey(privateKey)
+	decrypted = keyPriv.decrypt(body)
+
+	return render(request, 'myapplication/display_message.html', {'message': decrypted})

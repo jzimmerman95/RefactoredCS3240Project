@@ -1,0 +1,149 @@
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  
+  <style type="text/css">
+    body {
+    background-color: lightblue;
+    }
+    h3,h4 {
+    color: navy;
+    margin-left: 1em;
+    }
+    .buttons {
+    display: inline-block;
+    width: 25%;
+    margin-left: 2em;
+    margin-bottom: 5em;
+    margin-top: 1em;
+    }
+    </style>
+</head>
+
+<h2>My Inbox:</h2>
+
+<div>
+  <table class="table table-striped" id="messageTable">
+    <tr>
+      <th onclick="return f();">Sender</th>
+      <th>Subject</th>
+      <th>Time Sent</th>
+      <th>Encrypted</th>
+      <th>Actions</th>
+      <th></th>
+      </tr>
+{% for r in personal_inbox  %}
+    <tr> 
+      <td class="rSend">{{r.sender}}</td>
+      <td class="rSub">{{r.subject}}</td>
+      <td class="rTime">{{r.created }}</td>
+      <td class="rEncr">{{r.encrypted}}</td>
+      <td>
+        {%ifequal r.encrypted True%}
+        	<div>
+        	  <button onclick="return getId(this.id);" id="{{r.id}}_decrypt" class="buttonViewMessage" data-toggle="modal" data-target="#decryptMessage" style="font-size:8pt; margin-top: 7px;">Decrypt Message</button>
+        	</div>
+        {%else%}
+          <div>
+            <form method="POST" action="display_message">
+              {% csrf_token %}
+              <input type="hidden" name="id" value="{{r.id}}">
+              <button type="submit" class="buttonViewMessage" style="font-size:8pt; margin-top: 7px;">View Message</button>
+            </form>
+          </div>
+        {%endifequal%}
+      	<div>
+          <button onclick="return getId(this.id);" id="{{r.id}}_delete" class="buttonDeleteMessage" data-toggle="modal" data-target="#deleteMessage" style="font-size:8pt; margin-top: 7px;">Delete</button>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="buttons">
+  <a class="btn btn-primary btn-lg" href="new_message">Create New Message</a>
+</div>
+<div class="buttons">
+  <a class="btn btn-primary btn-lg" href="member_home_page">Home Page</a>
+</div>
+
+<div class="modal fade" id="deleteMessage" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+	<div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  <h3 class="modal-title" id="myModalLabel">Delete Message</h3>
+	</div>
+	<form id="deleteMessageForm" method="POST" action="delete_message">
+	  {% csrf_token %}
+	  <h4>Are you sure you would like to delete this message?</h4>
+	  <button type="submit" class="btn btn-default" onclick="modal">Delete Message</button>
+	</form>
+	<div class="modal-footer">
+	  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="decryptMessage" tabindex="-1" role="dialog" aria-labelledby="myModalLabelComplete">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h3 class="modal-title" id="myModalLabel">Decrypt and View Message</h3>
+        </div>
+        <form id="decryptMessageForm" method="POST" action="decrypt_message">
+          {% csrf_token %}
+          <h4>Please enter your private key:</h4>
+          <input type="text" id="privateKey" name="privateKey">
+          <button type="submit" class="btn btn-default" onclick="modal">Decrypt and View Message</button>
+        </form>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+  $('#deleteMessageForm').submit(function(){
+  $("<input type='text' value='' />")
+  .attr("id", ID)
+  .attr("name", "deleteMessageID")
+  .attr("value", ID.replace("_delete", ""))
+  .attr("type", "hidden")
+  .appendTo("#deleteMessageForm");
+  return true;
+  });
+  });
+</script>
+<script type="text/javascript">
+  $(document).ready(function(){
+  $('#decryptMessageForm').submit(function(){
+  $("<input type='text' value='' />")
+  .attr("id", ID)
+  .attr("name", "decryptMessageID")
+  .attr("value", ID.replace("_decrypt", ""))
+  .attr("type", "hidden")
+  .appendTo("#decryptMessageForm");
+  return true;
+  });
+  });
+</script>
+<script>
+  var ID;
+  function getId(id) {
+  ID = id;
+  }
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+</html>

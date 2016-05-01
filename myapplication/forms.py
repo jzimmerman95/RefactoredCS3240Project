@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import UserInformation, Folders, Groups
+from .models import UserInformation, Folders, Groups, Messages
 from django.contrib.auth.models import User
 from django.forms.widgets import Select
 
@@ -112,3 +112,9 @@ class ResetPassForm(forms.Form):
 class RequestNewKeyPairForm(forms.Form):
 	username = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'text'}))
 	pwd = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class':'form-control', 'type':'password'}))
+
+
+class MessageForm(forms.Form):
+	class Meta:
+		model = Messages
+		fields = ('recipient_username', 'subject', 'body', 'encrypted')
