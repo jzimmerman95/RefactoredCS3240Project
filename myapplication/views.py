@@ -82,7 +82,7 @@ def sign_user_up(request):
 					privateKey = str(key.exportKey())
 					privateKey = privateKey.strip()
 					privateKey = privateKey.replace(' ', '\r\n')
-					return render(request, 'myapplication/showPrivateKey.html', {'pkey':privateKey})
+					return render(request, 'myapplication/showPrivateKey.html', {'pkey':key.exportKey()})
 				else: 
 					form.add_error('fname', 'Your passwords do not match. Please make sure that your passwords match.')
 					return render(request, 'myapplication/signUp.html', {'form':form})
@@ -1230,9 +1230,11 @@ def decrypt_message(request):
 	# get and import the private key
 	privateKey = request.POST['privateKey']
 	# ensure formatting 
-	for line in privateKey:
-		if '\r\n' not in line:
-			line=line+'\r\n'
+	privateKey = privateKey.strip('-----BEGIN RSA PRIVATE KEY-----')
+	privateKey = privateKey.strip('-----END RSA PRIVATE KEY-----')
+	privateKey = privateKey.strip()
+	privateKey = privateKey.replace(' ', '\r\n')
+	privateKey = '-----BEGIN RSA PRIVATE KEY-----\r\n' + privateKey + '\r\n-----END RSA PRIVATE KEY-----'
 	privateKey = ''.join(privateKey)
 	print(privateKey)
 	try: 
@@ -1248,4 +1250,5 @@ def decrypt_message(request):
 	# # decode
 	body = Messages.objects.get(id=ID).body #.decode('utf-8')
 	decrypted = privateKey.decrypt(ast.literal_eval(str(body)))
+	print(decrypted)
 	return render(request, 'myapplication/display_message.html', {'encmsg':True, 'message': Messages.objects.get(id=ID), 'messagebody':decrypted})
