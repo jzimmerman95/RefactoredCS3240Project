@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 import json
 
 class UserInformation(models.Model):
@@ -57,3 +58,11 @@ class Folders(models.Model):
 
 	def getreports(self, x):
 		return json.loads(self.reports)
+
+class Messages(models.Model):
+	sender = models.CharField(max_length=100)
+	recipient_username = models.CharField(max_length=100)
+	subject = models.CharField(max_length=100, default=None)
+	body = models.TextField(max_length=1000)
+	created = models.DateTimeField(default=timezone.now, blank=True)
+	encrypted = models.BooleanField(default=False)

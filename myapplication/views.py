@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm
-from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm, MessageForm
+from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups, Messages
 # for authentication
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -11,6 +11,7 @@ from django.views.decorators.cache import cache_control
 # imports for encrytion
 from Crypto.PublicKey import RSA
 from Crypto import Random
+from base64 import b64decode
 from django.core.exceptions import ObjectDoesNotExist
 # to pass session variables to a template
 from django.template import RequestContext
@@ -18,6 +19,9 @@ from django.template import RequestContext
 from django.core.files import File 
 import os
 import mimetypes
+from django.contrib import messages
+from django.utils import timezone
+import ast
 
 # Create your views here.
 def home_page(request):
@@ -28,7 +32,7 @@ def home_page(request):
 		# generate key
 		random_generator = Random.new().read
 		key = RSA.generate(1024, random_generator)
-		publicKey = key.publickey() #.exportKey()
+		publicKey = key.publickey().exportKey()
 		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey=publicKey, role='sitemanager', numsitemanagersmade=0)
 		user_inf_obj.save()
 		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
@@ -56,7 +60,7 @@ def sign_user_up(request):
 					# generate key
 					random_generator = Random.new().read
 					key = RSA.generate(1024, random_generator)
-					publicKey = key.publickey() #.exportKey()
+					publicKey = key.publickey().exportKey()
 					# insert the user into the  model you created, including the generated public key
 					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
@@ -1164,6 +1168,78 @@ def request_private_key(request):
 	else:
 		return HttpResponseRedirect('home_page')
 
+def messages(request):
+	inbox_list = Messages.objects.order_by('-created')
+	personal_inbox = []
+	for m in inbox_list:
+		if m.recipient_username == request.session.get('username'):
+			personal_inbox.append(m)
+	context = {'personal_inbox': personal_inbox}
+	return render(request, 'myapplication/messages.html', context)
 
+def new_message(request):
+	if request.method == "POST":
+		form = MessageForm(request.POST)
+		if form.is_valid():
+			print("valid form")
+			sender = request.session.get('username')
+			subject = request.POST['subject']
+			body = request.POST['body']
+			receiver = request.POST['recipient_username']
+			try: 
+				rec = UserInformation.objects.get(username=receiver)
+			except ObjectDoesNotExist:
+				return render(request, 'myapplication/new_message.html', {'receiverError':'That user does not exist. Please type in a valid recipient username'})
+			if 'encrypted' in request.POST.keys():
+				encrypted=request.POST['encrypted']
+				public_key = UserInformation.objects.get(username=receiver).publickey
+				print(public_key)
+				public_key = RSA.importKey(public_key)
+				enc_data = public_key.encrypt(str.encode(body), 32) #str.encode(body)
+				# cast encrypted data as a string
+				enc_data = str(enc_data[0])
+				print(enc_data)
+				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=enc_data, encrypted=""+encrypted)
+				msg_obj.save()
+			else:
+				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=body, encrypted=False)
+				msg_obj.save()
 
+			return HttpResponseRedirect('messages')
 
+	else:
+		form = MessageForm()
+	return render(request, 'myapplication/new_message.html', {'form': form})
+
+def delete_message(request):
+	ID = request.POST['deleteMessageID']
+	Messages.objects.get(id = ID).delete()
+	return HttpResponseRedirect('messages')
+
+def display_message(request):
+	ID = request.POST['id']
+	return render(request, 'myapplication/display_message.html', {'message':Messages.objects.get(id = ID)})
+
+def decrypt_message(request):
+	ID = request.POST['decryptMessageID']
+	# get and import the private key
+	privateKey = request.POST['privateKey']
+	# ensure formatting 
+	for line in privateKey:
+		if '\r\n' not in line:
+			line=line+'\r\n'
+	privateKey = ''.join(privateKey)
+	try: 
+		privateKey = RSA.importKey(privateKey)
+	except:
+		inbox_list = Messages.objects.order_by('-created')
+		personal_inbox = []
+		for m in inbox_list:
+			if m.recipient_username == request.session.get('username'):
+				personal_inbox.append(m)
+		context = {'personal_inbox': personal_inbox, 'error': 'Please enter a valid private key. Your key may have extraneous leading or ending spaces.'}
+		return render(request, 'myapplication/messages.html', context)
+	# # decode
+	body = Messages.objects.get(id=ID).body #.decode('utf-8')
+	decrypted = privateKey.decrypt(ast.literal_eval(str(body)))
+	return render(request, 'myapplication/display_message.html', {'encmsg':True, 'message': Messages.objects.get(id=ID), 'messagebody':decrypted})

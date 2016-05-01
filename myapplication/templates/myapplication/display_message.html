@@ -1,0 +1,52 @@
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+  <style type="text/css">
+    body {
+    background-color: lightblue;
+    }
+    h3, h4, p {
+      color: navy;
+      margin-left: 10px;
+      }
+    .buttons {
+    display: inline-block;
+    width: 25%;
+    margin-left: 2em;
+    margin-bottom: 5em;
+    margin-top: 1em;
+    }
+    </style>
+</head>
+<body>
+    {%ifequal encmsg True%}
+    <h4>Sender:</h4><br>
+        <p>{{message.sender}}<p>
+    <h4>Subject:</h4><br>
+        <p>{{message.subject}}<p>
+    <h4>Time Sent:</h4><br>
+        <p>{{message.created}}<p>
+    <h4>Message:</h4><br>
+        <p>{{messagebody}}<p>
+    {%else%}
+    <h4>Sender:</h4><br>
+        <p>{{message.sender}}<p>
+    <h4>Subject:</h4><br>
+        <p>{{message.subject}}<p>
+    <h4>Time Sent:</h4><br>
+        <p>{{message.created}}<p>
+    <h4>Message:</h4><br>
+        <p>{{message.body}}<p>
+    {%endifequal%}
+</body>
+
+<div class="buttons">
+      <a class="btn btn-primary btn-sm" href="messages">Return to Inbox</a>
+</div>
+<div class="buttons">
+      <a class="btn btn-primary btn-sm" href="member_home_page">Home Page</a>
+</div>
+<html>
