@@ -8,10 +8,10 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
     body {
     background-color: lightblue;
     }
-    h3,h4 {
-    color: navy;
-    margin-left: 1em;
-    }
+    h3, h4, p {
+      color: navy;
+      margin-left: 10px;
+      }
     .buttons {
     display: inline-block;
     width: 25%;
@@ -22,7 +22,21 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
     </style>
 </head>
 <body>
-    {{message.body}}
+    <h4>Sender:</h4><br>
+        <p>{{message.sender}}<p>
+    <h4>Subject:</h4><br>
+        <p>{{message.subject}}<p>
+    <h4>Time Sent:</h4><br>
+        <p>{{message.created}}<p>
+    <h4>Message:</h4><br>
+        <p>{{message.body}}<p>
+
 </body>
 
+<div class="buttons">
+      <a class="btn btn-primary btn-sm" href="messages">Return to Inbox</a>
+</div>
+<div class="buttons">
+      <a class="btn btn-primary btn-sm" href="member_home_page">Home Page</a>
+</div>
 <html>
