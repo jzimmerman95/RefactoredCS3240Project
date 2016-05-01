@@ -18,7 +18,13 @@ import django.core.servers.basehttp
 from django.db import models
 from django.db.models.query import QuerySet
 from django.template import RequestContext
-from myapplication.models import UserInformation, Report
+from myapplication.models import UserInformation, Report, ReportFiles
+from myapplication.views import getFile
+from django.shortcuts import render
+
+from django.contrib.contenttypes.models import ContentType
+
+import requests
 
 import tkinter as tk
 
@@ -239,7 +245,8 @@ def promptLogin():
 
 
 def login(username, pwd):
-    user = authenticate(username=username, password=pwd)
+    #user = authenticate(username=username, password=pwd)
+    requests.get()
     # print()
     if user is not None:
         if user.is_active:
@@ -282,9 +289,64 @@ def seeReports(username):
         print("Report Name: " + file.reportname)
         print("Summary: " + file.summary)
         print("Description: " + file.description)
+        print("ReportFiles: ")
+        file_list = ReportFiles.objects.filter(reportname = file.reportname)
+        #print(file_list)
+        for i in file_list:
+            if(i.isencrypted == True):
+                print(str(i.uploadfile) + " (encrypted)")
+            else:
+                print(i.uploadfile)
         # print("Report last updated: " + str(file.timestamp))
         print()
         #print(report_list)
+    #ReportFile = input("Enter name of file you'd like to download or press enter for to not download: ")
+
+    #full_list = ReportFiles.objects.get()
+    #if ReportFile in full_list:
+    #test_list = ReportFiles.objects.all()
+    #for x in test_list:
+    #if ReportFile in test_list:
+        #print(x.uploadfile)
+        #if x.uploadfile == ReportFile:
+            #downloadFile(test_list[1].uploadfile)
+    #downloadFile(x.uploadfile, ReportFile)
+    downloadFile()
+
+def downloadFile():
+
+    #response = getFile(RequestContext)
+    #r = render(RequestContext, response, {})
+    outfile = 'outfile.txt'
+    string = input("Enter filename: ")
+    url = ('http://127.0.0.1:8000/get_file/?page=' + string)
+    print(url)
+    r = requests.get(url)
+
+    print(r)
+    #with open(data, "wb") as o:
+    #    o.write(data)
+    #with open(file_path, 'rb') as f:
+        #with open(os.path.join(os.path.expanduser('~'),'Documents', string[2:]), "wb") as o:
+
+            #if (ReportFile.isencrypted == True):
+            #    for line in f:
+                        #e_text = obj2.decrypt(line)
+                        #print(e_text)
+                        #o.write(e_text)
+                    #o.close()
+                    #f.close()
+            #else:
+                #for line in f:
+
+                    #print(e_text)
+                #    o.write(line)
+                #o.close()
+                #f.close()
+
+    return 0
+    #return 0
+
 
 
 if __name__ == "__main__":
@@ -307,11 +369,11 @@ if __name__ == "__main__":
     #passtitle.pack()
     #pwd.pack()
 
-    app = SampleApp()
-    app.title("File Download Application")
-    app.mainloop()
+    #app = SampleApp()
+    #app.title("File Download Application")
+    #app.mainloop()
 
-    #user = input('Please enter username: ')
-    #pwd = input('Please enter password: ')
+    user = input('Please enter username: ')
+    pwd = input('Please enter password: ')
 
-    #login(user, pwd)
+    login(user, pwd)
