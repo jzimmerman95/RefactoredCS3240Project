@@ -1186,7 +1186,6 @@ def new_message(request):
 	if request.method == "POST":
 		form = MessageForm(request.POST)
 		if form.is_valid():
-			print("valid form")
 			sender = request.session.get('username')
 			subject = request.POST['subject']
 			body = request.POST['body']
@@ -1198,12 +1197,10 @@ def new_message(request):
 			if 'encrypted' in request.POST.keys():
 				encrypted=request.POST['encrypted']
 				public_key = UserInformation.objects.get(username=receiver).publickey
-				print(public_key)
 				public_key = RSA.importKey(public_key)
 				enc_data = public_key.encrypt(str.encode(body), 32) #str.encode(body)
 				# cast encrypted data as a string
 				enc_data = str(enc_data[0])
-				print(enc_data)
 				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=enc_data, encrypted=""+encrypted)
 				msg_obj.save()
 			else:
@@ -1236,7 +1233,6 @@ def decrypt_message(request):
 	privateKey = privateKey.replace(' ', '\r\n')
 	privateKey = '-----BEGIN RSA PRIVATE KEY-----\r\n' + privateKey + '\r\n-----END RSA PRIVATE KEY-----'
 	privateKey = ''.join(privateKey)
-	print(privateKey)
 	try: 
 		privateKey = RSA.importKey(privateKey)
 	except:
@@ -1250,5 +1246,4 @@ def decrypt_message(request):
 	# # decode
 	body = Messages.objects.get(id=ID).body #.decode('utf-8')
 	decrypted = privateKey.decrypt(ast.literal_eval(str(body)))
-	print(decrypted)
 	return render(request, 'myapplication/display_message.html', {'encmsg':True, 'message': Messages.objects.get(id=ID), 'messagebody':decrypted})
