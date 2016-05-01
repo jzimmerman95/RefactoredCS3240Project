@@ -19,6 +19,7 @@ import os
 import mimetypes
 from django.contrib import messages
 from django.utils import timezone
+import ast
 
 
 # Create your views here.
@@ -1038,7 +1039,6 @@ def new_message(request):
 			sender = request.session.get('username')
 			subject = request.POST['subject']
 			body = request.POST['body']
-			#created = timezone.now
 			receiver = request.POST['recipient_username']
 			try: 
 				rec = UserInformation.objects.get(username=receiver)
@@ -1047,18 +1047,19 @@ def new_message(request):
 			if 'encrypted' in request.POST.keys():
 				encrypted=request.POST['encrypted']
 				public_key = UserInformation.objects.get(username=receiver).publickey
+				print(public_key)
 				public_key = RSA.importKey(public_key)
-				enc_data = public_key.encrypt(str.encode(body), 32)
+				enc_data = public_key.encrypt(str.encode(body), 32) #str.encode(body)
+				# cast encrypted data as a string
+				enc_data = str(enc_data[0])
+				print(enc_data)
 				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=enc_data, encrypted=""+encrypted)
 				msg_obj.save()
 			else:
-				
-			#check to see if receiver exists
 				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=body, encrypted=False)
 				msg_obj.save()
 
 			return HttpResponseRedirect('messages')
-			#return render(request, 'myapplication/messages.html', {})
 
 	else:
 		form = MessageForm()
@@ -1068,24 +1069,31 @@ def delete_message(request):
 	ID = request.POST['deleteMessageID']
 	Messages.objects.get(id = ID).delete()
 	return HttpResponseRedirect('messages')
-	#return render(request, 'myapplication/messages.html', {})
 
 def display_message(request):
 	ID = request.POST['id']
 	return render(request, 'myapplication/display_message.html', {'message':Messages.objects.get(id = ID)})
 
 def decrypt_message(request):
-	# TODO: UNENCRYPTE THE MESSAGE, PASS TO VIEW
 	ID = request.POST['decryptMessageID']
+	# get and import the private key
 	privateKey = request.POST['privateKey']
-
+	# ensure formatting 
+	for line in privateKey:
+		if '\r\n' not in line:
+			line=line+'\r\n'
+	privateKey = ''.join(privateKey)
+	try: 
+		privateKey = RSA.importKey(privateKey)
+	except:
+		inbox_list = Messages.objects.order_by('-created')
+		personal_inbox = []
+		for m in inbox_list:
+			if m.recipient_username == request.session.get('username'):
+				personal_inbox.append(m)
+		context = {'personal_inbox': personal_inbox, 'error': 'Please enter a valid private key. Your key may have extraneous leading or ending spaces.'}
+		return render(request, 'myapplication/messages.html', context)
 	# # decode
-	# body = Messages.objects.get(id=ID).body
-	# key64 = b'MIICXQIBAAKBgQDB7BJpputV7IEBctW1gT2+hlqCDnuq8bg2jJ8gqZIg1fyDPv0R2a1MEjm00RXHycFebUPOnhxNNzr/29LNln81BuDyDII6jhikr4qrqKmG0FbDXr6fCdMXnDrwXrylk4svHFc7XclJIcsdyRIPRP2lDpS8IaCxRlR7GUqKNA715QIDAQABAoGBAIPemu7JmYMGnvtzMayJxIkJKAcE/kfStCg0HAnEBiDaIyrE7Kb01YnDYwZ4oE0J/7rMpq2cizZe9noC7CjtzHX9j3ek2ptD8vKM0/D7ew9q62K0zvsdXbJJWaZqltdpYOSSTxi8FSqcNXRo1T4xJcJ7wKSZLBwnWXX85tEAMb3JAkEA10Pzk86LSC7ZsQGbpaIqyzdj0OcoTeajK6nG/8kQJhowlkRQWzE4KPH4zw+b/VFC4CvVKOemLmaG5W/1TMM4RwJBAOaeMYNuSA532Kq/Eko2NGhSYnuH2TBvqApXjyiIzB+U35P9DJuB73DEAHy6hqLQAwBPpfhiteW0Ir2eyL7i4nMCQBOjjGZQsp5MP+oJJoUO7W6KyB136VJqFzrVi2Usl7+SJhqfcuFO9TuvD678UpPixQIknZbUw3F6QxZNh4iQSuMCQEIfo6TCryhu1pIGnRDoP9iVnqU6y1xm93CXsHV328dGYWDGUqIX/HaBzH324Xm3WNTzAWyZqPwGzVs/NuH8nd8CQQCuYY3JHyhMKLDNtZng5xjcHcGUpZOVMZaa8MhU3S+FQgFwx4btNn04yVgUDqjP7pgWfhuxIz2+bXEpybw2a155'
-	# keyDER = b64decode(key64)
-	# keyPriv = RSA.importKey(keyDER)
-	# # privateKey = ' '.join(privateKey)
-	# # privateKey = RSA.importKey(privateKey)
-	decrypted = keyPriv.decrypt(body)
-
-	return render(request, 'myapplication/display_message.html', {'message': decrypted})
+	body = Messages.objects.get(id=ID).body #.decode('utf-8')
+	decrypted = privateKey.decrypt(ast.literal_eval(str(body)))
+	return render(request, 'myapplication/display_message.html', {'encmsg':True, 'message': Messages.objects.get(id=ID), 'messagebody':decrypted})
