@@ -238,7 +238,7 @@ def create_user_group(request):
 			else:
 				user = request.session['username']
 				groups = Groups.objects.all().filter(username=user)
-				return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'members': members})
+				return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'members': members})
 	else: 
 		return HttpResponseRedirect('home_page')
 
@@ -366,7 +366,7 @@ def add_users_to_group(request):
 	else:
 		user = request.session['username']
 		groups = Groups.objects.all().filter(username=user)
-		return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'members': members})
+		return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'members': members})
 
 def delete_users_from_group(request):
 	users = request.POST.getlist('users')
@@ -388,7 +388,7 @@ def delete_users_from_group(request):
 	else:
 		user = request.session['username']
 		groups = GroupUsers.objects.all().filter(username=user)
-		return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'members': members})
+		return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'members': members})
 
 
 def create_report(request):
