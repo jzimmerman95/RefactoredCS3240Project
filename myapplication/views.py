@@ -258,7 +258,7 @@ def admin_view_groups(request):
 
 def manage_groups(request):
 	user = request.session['username']
-	groups = GroupsUsers.objects.all().filter(username=user)
+	groups = GroupUsers.objects.all().filter(username=user)
 	form = CreateGroupForm(request.POST)
 	form.setChoices(request)
 	groupNames = []

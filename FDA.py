@@ -13,8 +13,17 @@ def login():
     rpost = s.post('http://127.0.0.1:8000/auth_user_fda', data={'username': username, 'password': password})
     print(rpost.content.decode('utf-8'))
     if (rpost.content.decode('utf-8') == "Successful Login"):
-        print("Your reports are displayed below. Type q at any point to quit.")
-        menu(username)
+        print("Type v to view reports, type e to encrypt a file, or type q to quit")
+        ans = input()
+        if ans == 'v':
+            print("Your reports are displayed below. Type q at any point to quit.")
+            menu(username)
+        if ans == 'e':
+            print("Please enter the name of the file that you would like to encrypt:")
+            filename = input()
+            encrypt_file(username, filename)
+        if ans == 'q':
+            print("Goodbye")
     else:
         print("Type t to try again, and type q to quit")
         user_input = input()
@@ -104,7 +113,6 @@ def encrypt_file(username, filename):
     s=requests.Session()
     response = s.post('http://127.0.0.1:8000/get_pub_key_fda', data={'username':username})
     pubKey = response.text
-    print(pubKey)
     pubKey = RSA.importKey(pubKey)
     
     text = ""
@@ -115,7 +123,18 @@ def encrypt_file(username, filename):
     write_filename = filename + ".enc"
     with open(write_filename, 'wb') as wf:
         wf.write(cipher_text)
-    return True
+    print("The file has been encrypted and saved as "+filename+".enc")
+    print("Type v to view reports, type e to encrypt a file, or type q to quit")
+    ans = input()
+    if ans == 'v':
+        print("Your reports are displayed below. Type q at any point to quit.")
+        menu(username)
+    if ans == 'e':
+        print("Please enter the name of the file that you would like to encrypt:")
+        filename = input()
+        encrypt_file(username, filename)
+    if ans == 'q':
+        print("Goodbye")
 
 
 if __name__=='__main__':
