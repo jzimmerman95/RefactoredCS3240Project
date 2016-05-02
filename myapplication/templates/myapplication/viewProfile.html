@@ -1,0 +1,37 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+		<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		label {
+			float: left;
+		    width: 150px;
+		}
+		h3, h4, p {
+			color: navy;
+			margin-left: 10px;
+		}
+		.buttons {
+			margin-left: 10px;
+		}
+		</style>
+	</head>
+	<body>
+		<h3>Your User Profile</h3><br>
+		<div style="margin-left:10px;">
+		    <h4>Username: {{ user.username }}</h4>
+		    <h4>Email: {{ user.email }}</h4>
+		    <h4>First Name: {{ user.firstname }}</h4>
+		    <h4>Last Name: {{ user.lastname }}</h4>
+		    <h4>Bio: {{ user.bio }}</h4>
+		</div>
+		<div class="buttons">
+			<a class="btn btn-primary btn-sm" href="edit_profile">Edit Profile</a>
+			<a class="btn btn-primary btn-sm" href="member_home_page">Home</a>
+		</div>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	</body>
+</html>

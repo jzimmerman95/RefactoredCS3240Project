@@ -148,6 +148,43 @@ def admin_home_page(request):
 	else: 
 		return HttpResponseRedirect('home_page')
 
+def view_profile(request):
+	user = UserInformation.objects.get(username=request.session['username'])
+	return render(request, 'myapplication/viewProfile.html', {'user': user})
+
+def edit_profile(request):
+	user = UserInformation.objects.get(username=request.session['username'])
+	form = UserSignUpForm(initial={'username': user.username, 'email': user.email, 'firstname': user.firstname, 'lastname': user.lastname, 'bio': user.bio,})
+	return render(request, 'myapplication/editProfile.html', {'user': user, 'form': form})
+
+def edit_user_profile(request):
+	if request.method == 'POST':
+		form = UserSignUpForm(request.POST)
+		oldusername = request.POST.get('oldusername')
+		if form.is_valid():
+			username = request.POST.get('username')
+			email = request.POST.get('email')
+			fname = request.POST.get('firstname')
+			lname = request.POST.get('lastname')
+			bio = request.POST.get('bio')
+
+			# ensure username is unique
+			if UserInformation.objects.filter(username=username).exists():
+				if username != oldusername:
+					form.add_error('username', 'That username is taken. Please choose a different username.')
+					return render(request, 'myapplication/editProfile.html', {'form':form})
+
+			user = UserInformation.objects.get(username=oldusername)
+			user.username = username
+			user.email = email
+			user.firstname = fname
+			user.lastname = lname
+			user.bio = bio
+			user.save()
+			return render(request, 'myapplication/viewProfile.html', {'user': user})
+
+	return render(request, 'myapplication/viewProfile.html', {})
+
 def admin_manage_reports(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
 		return render(request, 'myapplication/adminManageReports.html', {}, context_instance=RequestContext(request))
@@ -218,7 +255,7 @@ def admin_view_groups(request):
 
 def manage_groups(request):
 	user = request.session['username']
-	groups = Groups.objects.all().filter(username=user)
+	groups = GroupsUsers.objects.all().filter(username=user)
 	form = CreateGroupForm(request.POST)
 	form.setChoices(request)
 	groupNames = []
