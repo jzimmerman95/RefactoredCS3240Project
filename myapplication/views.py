@@ -211,7 +211,9 @@ def admin_view_groups(request):
 			members[group.groupname] = []
 			for member in GroupUsers.objects.filter(groupname=group.groupname):
 				members[group.groupname].append(member.username)
-		return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all(), 'members': members})
+		form = CreateGroupForm()
+		form.setChoices(request)
+		return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all(), 'members': members, 'form':form})
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
@@ -343,7 +345,7 @@ def delete_users_from_group(request):
 		return render(request, 'myapplication/adminViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'members': members})
 	else:
 		user = request.session['username']
-		groups = Groups.objects.all().filter(username=user)
+		groups = GroupUsers.objects.all().filter(username=user)
 		return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'members': members})
 
 
