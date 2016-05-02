@@ -17,6 +17,8 @@ from django.core.files import File
 import os
 import mimetypes
 
+from django.views.decorators.csrf import csrf_exempt
+
 
 # Create your views here.
 def home_page(request):
@@ -1038,6 +1040,43 @@ def request_private_key(request):
 	passForm = ResetPassForm()
 	return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':keyPairForm, 'passForm':passForm})
 
+@csrf_exempt
+def auth_user_fda(request):
+	user = authenticate(username=request.POST['username'],  password=request.POST['password'])
+	if user is not None:
+		if user.is_active:
+			return HttpResponse("Successful Login")
+	return HttpResponse("Your username or password is not valid")
 
+@csrf_exempt
+def fda_reports(request):
+	return render(request, 'myapplication/fdaViewReports.html', {'reports':Report.objects.filter(owner=request.POST['username'])})
+	#return HttpResponse("reports")
+
+@csrf_exempt
+def fda_view_files(request):
+	report = Report.objects.get(id=request.POST['id'])
+	return render(request, 'myapplication/fdaViewFiles.html', {'report': report, 'reportFiles':ReportFiles.objects.filter(reportname=report.reportname)})
+
+@csrf_exempt
+def check_encryption(request):
+	f = ReportFiles.objects.get(id=request.POST['id']).isencrypted
+	return HttpResponse(f)
+
+@csrf_exempt
+def download_files_fda(request):
+	#filename = ReportFiles.objects.get(id=request.POST['id'])
+	f = ReportFiles.objects.get(id=request.POST['id']).uploadfile
+	filename=f.name
+
+	path = f.path # Get file path
+	wrapper = FileWrapper( open( path, "rb" ) )
+	content_type = mimetypes.guess_type( path )[0]
+
+	response = HttpResponse(wrapper, content_type = content_type)
+	response['Content-Length'] = os.path.getsize( path )
+	fname, file_extension = os.path.splitext(path)
+	response['Content-Disposition'] = 'attachment; filename='+filename
+	return response
 
 

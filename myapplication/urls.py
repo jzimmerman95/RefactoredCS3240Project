@@ -38,4 +38,9 @@ urlpatterns = [
     url(r'^view_shared_reports$', views.view_shared_reports, name='view_shared_reports'),
     url(r'^reset_pass$', views.reset_pass, name='reset_pass'),
     url(r'^request_private_key$', views.request_private_key, name='request_private_key'),
+    url(r'^auth_user_fda$', views.auth_user_fda, name='auth_user_fda'),
+    url(r'^fda_reports$', views.fda_reports, name='fda_reports'),
+    url(r'^fda_view_files$', views.fda_view_files, name='fda_view_files'),
+    url(r'^download_files_fda$', views.download_files_fda, name='download_files_fda'),
+    url(r'^check_encryption$', views.check_encryption, name='check_encryption'),
 ]
