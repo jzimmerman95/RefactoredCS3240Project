@@ -9,7 +9,7 @@ class UserInformation(models.Model):
 	email = models.EmailField(max_length=200, default='none')
 	firstname = models.CharField(max_length=200, default='none')
 	lastname = models.CharField(max_length=200, default='none')
-	publickey = models.CharField(max_length=200, default='none')
+	publickey = models.TextField()
 	role = models.CharField(max_length=50, default='user')
 	numsitemanagersmade = models.IntegerField(default=0)
 	bio = models.CharField(max_length=1000, default='')
