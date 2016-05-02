@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations, models
+from django.db import models, migrations
 import django.utils.timezone
 
 
@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Folders',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('foldername', models.CharField(max_length=100)),
                 ('owner', models.CharField(max_length=200, default='none')),
                 ('reports', models.CharField(max_length=255)),
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Groups',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('groupname', models.CharField(max_length=200, default='none')),
                 ('owner', models.CharField(max_length=200, default='none')),
                 ('username', models.CharField(max_length=200, default='none')),
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='GroupUsers',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('groupname', models.CharField(max_length=100)),
                 ('username', models.CharField(max_length=100)),
             ],
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Messages',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('sender', models.CharField(max_length=100)),
                 ('recipient_username', models.CharField(max_length=100)),
                 ('subject', models.CharField(max_length=100, default=None)),
@@ -52,28 +52,28 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Report',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('reportname', models.CharField(max_length=100)),
                 ('owner', models.CharField(max_length=100, default='none')),
                 ('summary', models.CharField(max_length=200)),
                 ('description', models.TextField()),
-                ('isprivate', models.CharField(default='public', max_length=7, choices=[('public', 'public'), ('private', 'private')])),
+                ('isprivate', models.CharField(choices=[('public', 'public'), ('private', 'private')], default='public', max_length=7)),
                 ('timestamp', models.DateTimeField(blank=True, default=django.utils.timezone.now)),
             ],
         ),
         migrations.CreateModel(
             name='ReportFiles',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('reportname', models.CharField(max_length=100)),
-                ('isencrypted', models.BooleanField(default=False, choices=[('yes', 'yes'), ('no', 'no')])),
+                ('isencrypted', models.BooleanField(choices=[('yes', 'yes'), ('no', 'no')], default=False)),
                 ('uploadfile', models.FileField(upload_to='.')),
             ],
         ),
         migrations.CreateModel(
             name='ReportGroups',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('reportname', models.CharField(max_length=100)),
                 ('groupname', models.CharField(max_length=200)),
             ],
@@ -81,14 +81,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserInformation',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('username', models.CharField(max_length=200, default='none')),
                 ('email', models.EmailField(max_length=200, default='none')),
                 ('firstname', models.CharField(max_length=200, default='none')),
                 ('lastname', models.CharField(max_length=200, default='none')),
-                ('publickey', models.CharField(max_length=200, default='none')),
+                ('publickey', models.TextField()),
                 ('role', models.CharField(max_length=50, default='user')),
                 ('numsitemanagersmade', models.IntegerField(default=0)),
+                ('bio', models.CharField(max_length=1000, default='')),
             ],
         ),
     ]
