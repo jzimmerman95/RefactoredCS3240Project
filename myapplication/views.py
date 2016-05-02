@@ -366,7 +366,7 @@ def add_users_to_group(request):
 		return render(request, 'myapplication/adminViewGroups.html', {'allGroups':Groups.objects.all(), 'groups': Groups.objects.all(), 'form': form, 'members': members})
 	else:
 		user = request.session['username']
-		groups = Groups.objects.filter(username=user)
+		groups = GroupUsers.objects.filter(username=user)
 		return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'groups': groups, 'form': form, 'members': members})
 
 def delete_users_from_group(request):
