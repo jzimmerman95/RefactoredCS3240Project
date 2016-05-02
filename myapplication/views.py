@@ -371,7 +371,7 @@ def add_users_to_group(request):
 def delete_users_from_group(request):
 	users = request.POST.getlist('users')
 	for user in users:
-		user_obj = GroupUsers.objects.filter(groupname=request.POST['deleteUsers'], username=user)
+		user_obj = GroupUsers.objects.get(groupname=request.POST['deleteUsers'], username=user)
 		user_obj.delete()
 
 	members = {}
