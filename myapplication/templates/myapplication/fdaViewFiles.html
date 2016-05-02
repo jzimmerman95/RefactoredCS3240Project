@@ -1,0 +1,7 @@
+Report Name 	Summary 	Description
+{{report.reportname}}		{{report.summary}}		{{report.description}}
+
+Files: 
+{%for r in reportFiles%}
+{{r.id}}		{{r.reportname}}		{{r.uploadfile}}		{{r.isencrypted}}
+{%endfor%}

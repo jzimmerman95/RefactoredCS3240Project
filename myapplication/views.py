@@ -22,6 +22,7 @@ import mimetypes
 from django.contrib import messages
 from django.utils import timezone
 import ast
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 def home_page(request):
@@ -1307,12 +1308,67 @@ def new_message(request):
 			else:
 				msg_obj = Messages(sender=sender, recipient_username=receiver, subject=subject, body=body, encrypted=False)
 				msg_obj.save()
-
 			return HttpResponseRedirect('messages')
-
 	else:
 		form = MessageForm()
 	return render(request, 'myapplication/new_message.html', {'form': form})
+
+@csrf_exempt
+def auth_user_fda(request):
+	user = authenticate(username=request.POST['username'],  password=request.POST['password'])
+	if user is not None:
+		if user.is_active:
+			return HttpResponse("Successful Login")
+	return HttpResponse("Your username or password is not valid")
+
+@csrf_exempt
+def fda_reports(request):
+	usr = request.POST['username']
+	reports = []
+	for rep in Report.objects.filter(owner=usr):
+		reports.append(rep)
+	# for each group that the user is in
+	for group in Groups.objects.filter(username=usr):
+		# get the reports shared with that group
+		for r in ReportGroups.objects.filter(groupname=group.groupname):
+			report = Report.objects.get(reportname=r.reportname)
+			if report not in reports:
+				reports.append(report)
+
+	return render(request, 'myapplication/fdaViewReports.html', {'reports': reports})
+	#return HttpResponse("reports")
+
+@csrf_exempt
+def fda_view_files(request):
+	report = Report.objects.get(id=request.POST['id'])
+	return render(request, 'myapplication/fdaViewFiles.html', {'report': report, 'reportFiles':ReportFiles.objects.filter(reportname=report.reportname)})
+
+@csrf_exempt
+def check_encryption(request):
+	f = ReportFiles.objects.get(id=request.POST['id']).isencrypted
+	return HttpResponse(f)
+
+@csrf_exempt
+def get_pub_key_fda(request):
+	usr = request.POST['username']
+	publicKey = UserInformation.objects.get(username=usr).publickey
+	return HttpResponse(publicKey)
+
+@csrf_exempt
+def download_files_fda(request):
+	#filename = ReportFiles.objects.get(id=request.POST['id'])
+	f = ReportFiles.objects.get(id=request.POST['id']).uploadfile
+	filename=f.name
+
+	path = f.path # Get file path
+	wrapper = FileWrapper( open( path, "rb" ) )
+	content_type = mimetypes.guess_type( path )[0]
+
+	response = HttpResponse(wrapper, content_type = content_type)
+	response['Content-Length'] = os.path.getsize( path )
+	fname, file_extension = os.path.splitext(path)
+	response['Content-Disposition'] = 'attachment; filename='+filename
+	return response
 
 def delete_message(request):
 	ID = request.POST['deleteMessageID']

@@ -49,4 +49,10 @@ urlpatterns = [
     url(r'^delete_message$', views.delete_message, name='delete_message'),
     url(r'^display_message$', views.display_message, name='display_message'),
     url(r'^decrypt_message$', views.decrypt_message, name='decrypt_message'),
+    url(r'^auth_user_fda$', views.auth_user_fda, name='auth_user_fda'),
+    url(r'^fda_reports$', views.fda_reports, name='fda_reports'),
+    url(r'^fda_view_files$', views.fda_view_files, name='fda_view_files'),
+    url(r'^download_files_fda$', views.download_files_fda, name='download_files_fda'),
+    url(r'^check_encryption$', views.check_encryption, name='check_encryption'),
+    url(r'^get_pub_key_fda$', views.get_pub_key_fda, name='get_pub_key_fda'),
 ]
