@@ -9,6 +9,13 @@ class UserSignUpForm(ModelForm):
 		model = UserInformation
 		fields=('username',)
 
+class UserEditForm(forms.Form):
+	username=forms.CharField(max_length=200)
+	email=forms.CharField(max_length=200)
+	firstname=forms.CharField(max_length=200)
+	lastname=forms.CharField(max_length=200)
+	bio=forms.CharField(widget=forms.Textarea(attrs={'id':'descriptionid'}))
+
 CHOICES = (  
 	('yes', 'yes'),
 	('no', 'no'),

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.servers.basehttp import FileWrapper
-from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm, MessageForm
+from .forms import UserSignUpForm, ReportForm, EditFileForm, EditGroupForm, CreateFolderForm, RenameFolderForm, SearchReportsForm, ResetPassForm, RequestNewKeyPairForm, CreateGroupForm, MessageForm, UserEditForm
 from .models import UserInformation, Report, ReportFiles, ReportGroups, Folders, Groups, Messages, GroupUsers
 # for authentication
 from django.contrib.auth.models import User
@@ -155,12 +155,12 @@ def view_profile(request):
 
 def edit_profile(request):
 	user = UserInformation.objects.get(username=request.session['username'])
-	form = UserSignUpForm(initial={'username': user.username, 'email': user.email, 'firstname': user.firstname, 'lastname': user.lastname, 'bio': user.bio,})
+	form = UserEditForm(initial={'username': user.username, 'email': user.email, 'firstname': user.firstname, 'lastname': user.lastname, 'bio': user.bio,})
 	return render(request, 'myapplication/editProfile.html', {'user': user, 'form': form})
 
 def edit_user_profile(request):
 	if request.method == 'POST':
-		form = UserSignUpForm(request.POST)
+		form = UserEditForm(request.POST)
 		oldusername = request.POST.get('oldusername')
 		if form.is_valid():
 			username = request.POST.get('username')
