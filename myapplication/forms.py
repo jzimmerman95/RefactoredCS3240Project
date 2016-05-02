@@ -5,9 +5,17 @@ from django.contrib.auth.models import User
 from django.forms.widgets import Select
 
 class UserSignUpForm(ModelForm):
+	bio = forms.CharField(widget=forms.Textarea(attrs={'id': 'bioid'}))
 	class Meta:
 		model = UserInformation
-		fields=('username', )
+		fields=('username', 'email', 'firstname', 'lastname', 'bio',)
+
+# class EditProfileForm(forms.Form):
+# 	username = forms.CharField(max_length=200, default='none')
+# 	email = forms.EmailField(max_length=200, default='none')
+# 	firstname = forms.CharField(max_length=200, default='none')
+# 	lastname = forms.CharField(max_length=200, default='none')
+# 	bio = forms.CharField(widget=forms.Textarea(attrs={'id': 'bioid'}))
 
 CHOICES = (  
 	('yes', 'yes'),
