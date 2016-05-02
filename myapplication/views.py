@@ -224,8 +224,9 @@ def create_user_group(request):
 
 				users = request.POST.getlist('users')
 				for user in users:
-					group_users_obj = GroupUsers(groupname=group.groupname, username=user)
-					group_users_obj.save()
+					if user != creator.username:
+						group_users_obj = GroupUsers(groupname=group.groupname, username=user)
+						group_users_obj.save()
 
 			members = {}
 			for group in Groups.objects.all():
@@ -271,7 +272,7 @@ def manage_groups(request):
 		for member in GroupUsers.objects.filter(groupname=group.groupname):
 			members[group.groupname].append(member.username)
 
-	return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'groupNames': groupNames, 'members': members})
+	return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'groupNames': groupNames, 'members': members})
 
 def view_groups(request):
 	newgroupname = request.POST.get('groupname')
