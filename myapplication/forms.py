@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import UserInformation, Folders, Groups, Messages
+from .models import UserInformation, Folders, Groups, Messages, GroupUsers
 from django.contrib.auth.models import User
 from django.forms.widgets import Select
 
@@ -53,7 +53,7 @@ class ReportForm(forms.Form):
 
 	def setChoices(self, request):
 		CHOICES3 = []
-		for group in Groups.objects.filter(username=request.session['username']):
+		for group in GroupUsers.objects.filter(username=request.session['username']):
 			CHOICES3.append((group.groupname, group.groupname))
 		self.fields['groups'].choices = CHOICES3
 
