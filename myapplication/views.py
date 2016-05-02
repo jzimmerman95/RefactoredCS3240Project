@@ -29,7 +29,7 @@ def home_page(request):
 		# generate key
 		random_generator = Random.new().read
 		key = RSA.generate(1024, random_generator)
-		publicKey = key.publickey() #.exportKey()
+		publicKey = key.publickey().exportKey()
 		user_inf_obj = UserInformation(username='admin', email='safecollab@gmail.com', firstname='Admin', lastname='Admin', publickey=publicKey, role='sitemanager', numsitemanagersmade=0)
 		user_inf_obj.save()
 		user = User.objects.create_user(username='admin', password='adminpass', first_name='Admin', last_name='Admin')
@@ -57,7 +57,7 @@ def sign_user_up(request):
 					# generate key
 					random_generator = Random.new().read
 					key = RSA.generate(1024, random_generator)
-					publicKey = key.publickey() #.exportKey()
+					publicKey = key.publickey().exportKey()
 					# insert the user into the  model you created, including the generated public key
 					user_inf_obj = UserInformation(username = username, email = email, firstname = fname, lastname = lname, publickey = publicKey, role='user', numsitemanagersmade=-1)
 					user_inf_obj.save()
@@ -1050,7 +1050,19 @@ def auth_user_fda(request):
 
 @csrf_exempt
 def fda_reports(request):
-	return render(request, 'myapplication/fdaViewReports.html', {'reports':Report.objects.filter(owner=request.POST['username'])})
+	usr = request.POST['username']
+	reports = []
+	for rep in Report.objects.filter(owner=usr):
+		reports.append(rep)
+	# for each group that the user is in
+	for group in Groups.objects.filter(username=usr):
+		# get the reports shared with that group
+		for r in ReportGroups.objects.filter(groupname=group.groupname):
+			report = Report.objects.get(reportname=r.reportname)
+			if report not in reports:
+				reports.append(report)
+
+	return render(request, 'myapplication/fdaViewReports.html', {'reports': reports})
 	#return HttpResponse("reports")
 
 @csrf_exempt
@@ -1062,6 +1074,12 @@ def fda_view_files(request):
 def check_encryption(request):
 	f = ReportFiles.objects.get(id=request.POST['id']).isencrypted
 	return HttpResponse(f)
+
+@csrf_exempt
+def get_pub_key_fda(request):
+	usr = request.POST['username']
+	publicKey = UserInformation.objects.get(username=usr).publickey
+	return HttpResponse(publicKey)
 
 @csrf_exempt
 def download_files_fda(request):
