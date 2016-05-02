@@ -229,33 +229,44 @@ def manage_groups(request):
 		for member in GroupUsers.objects.filter(groupname=group.groupname):
 			members[group.groupname].append(member.username)
 
-	return render(request, 'myapplication/ViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'groupNames': groupNames, 'members': members})
+	return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'groupNames': groupNames, 'members': members})
 
 def view_groups(request):
+	newgroupname = request.POST.get('groupname')
 	if request.method == 'POST':
 		form = CreateGroupForm(request.POST)
 		if form.is_valid():
 			oldgroupname = request.POST.get('oldgroupname')
-			groupname = request.POST.get('groupname')
-
 			g = Groups.objects.get(groupname=oldgroupname)
-			g.groupname = groupname
+			if GroupUsers.objects.filter(groupname=oldgroupname).exists():
+				for group in GroupUsers.objects.filter(groupname=oldgroupname):
+					newgroup = GroupUsers(groupname=newgroupname, username=group.username)
+					newgroup.save()
+					group.delete()
+			
+			g.groupname = newgroupname
 			g.save()
-
 	else:
 		pass 
 
 	users = request.POST.getlist('users')
 	for user in users:
-		group_users_obj = GroupUsers(groupname=groupname, username=user.username)
+		group_users_obj = GroupUsers(groupname=newgroupname, username=user)
 		group_users_obj.save()
 
+	user = request.session['username']
+	groups = Groups.objects.all().filter(username=user)
+
 	groupNames = []
+	members = {}
 	for group in Groups.objects.all():
 		groupNames.append(group.groupname)
+		members[group.groupname] = []
+		for member in GroupUsers.objects.filter(groupname=group.groupname):
+			members[group.groupname].append(member.username)
 	form = CreateGroupForm()
 	form.setChoices(request)
-	return render(request, 'myapplication/viewGroups.html', {'form': form, 'groups': Groups.objects.all(), 'groupNames': groupNames})	
+	return render(request, 'myapplication/viewGroups.html', {'form': form, 'groups': groups, 'groupNames': groupNames, 'members': members})	
 
 
 def admin_delete_group(request):

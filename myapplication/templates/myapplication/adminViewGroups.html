@@ -28,7 +28,6 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			<tr>
 				<th>Group Name</th>
 				<th>Owner</th>
-				<th>Username</th>
 				<th>Users</th>
 				<th></th>
 			</tr>
@@ -36,7 +35,6 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 				<tr> 
 					<td class="gName">{{ group.groupname }}</td>
 					<td class="gOwner">{{ group.owner }}</td>
-					<td class="gUsername">{{ group.username }}</td>
 					<td class="gUsers">
 						{% for key, value in members.items %}
 							{% ifequal key group.groupname %}
@@ -49,9 +47,6 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 					<td>
 						<div>
 							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="button" data-toggle="modal" data-target="#deleteGroup" style="font-size:8pt; margin-top: 7px;">Delete</button>
-						</div>
-						<div>
-							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="buttonModifyGroup" data-toggle="modal" data-target="#editGroup" style="font-size:8pt; margin-top: 7px;">Modify Group Name</button>
 						</div>
 						<div>
 							<button onclick="return getId(this.id);" id="{{group.groupname}}" class="buttonModifyGroup" data-toggle="modal" data-target="#addUsers" style="font-size:8pt; margin-top: 7px;">Add Users</button>
