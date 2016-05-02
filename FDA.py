@@ -10,7 +10,7 @@ def login():
     print("Please enter your password: ")
     password = input()
     s=requests.Session()
-    rpost = s.post('http://127.0.0.1:8000/auth_user_fda', data={'username': username, 'password': password})
+    rpost = s.post('http://safecollab18.herokuapp.com/auth_user_fda', data={'username': username, 'password': password})
     print(rpost.content.decode('utf-8'))
     if (rpost.content.decode('utf-8') == "Successful Login"):
         print("Type v to view reports, type e to encrypt a file, or type q to quit")
@@ -34,7 +34,7 @@ def login():
 
 def menu(username):
     s=requests.Session()
-    rpost = s.post('http://127.0.0.1:8000/fda_reports', data={'username':username})
+    rpost = s.post('http://safecollab18.herokuapp.com/fda_reports', data={'username':username})
     #print(rpost.status_code)
     print(rpost.text)
     print("Type the ID of the report that you would like to view")
@@ -47,7 +47,7 @@ def menu(username):
 
 def getReport(username, idNo):
     s=requests.Session()
-    rpost = s.post('http://127.0.0.1:8000/fda_view_files', data={'username':username, 'id': idNo})
+    rpost = s.post('http://safecollab18.herokuapp.com/fda_view_files', data={'username':username, 'id': idNo})
     #print(rpost.status_code)
     print(rpost.text)
     print("Type the ID of the file that you would like to download")
@@ -62,7 +62,7 @@ def getReport(username, idNo):
 
 def checkEncryption(username, idNo):
     s=requests.Session()
-    rpost = s.post('http://127.0.0.1:8000/check_encryption', data={'id': idNo}) 
+    rpost = s.post('http://safecollab18.herokuapp.com/check_encryption', data={'id': idNo}) 
     if rpost.text == "False":
         downloadFile(username, idNo)
     else:
@@ -72,7 +72,7 @@ def checkEncryption(username, idNo):
 
 def downloadFile(username, idNo):
     s=requests.Session()
-    response = s.post('http://127.0.0.1:8000/download_files_fda', data={'id': idNo}, stream=True)
+    response = s.post('http://safecollab18.herokuapp.com/download_files_fda', data={'id': idNo}, stream=True)
     print("What would you like to name the file?")
     filename=input()
     with open(filename, 'wb') as handle:
@@ -86,7 +86,7 @@ def downloadFile(username, idNo):
 
 def downloadEncryptedFile(username, idNo):
     s=requests.Session()
-    response = s.post('http://127.0.0.1:8000/download_files_fda', data={'id': idNo}, stream=True)
+    response = s.post('http://safecollab18.herokuapp.com/download_files_fda', data={'id': idNo}, stream=True)
     print("What would you like to name the file?")
     filename=input()
     print("Please enter your private encryption key: ")
@@ -111,7 +111,7 @@ def downloadEncryptedFile(username, idNo):
 
 def encrypt_file(username, filename):  
     s=requests.Session()
-    response = s.post('http://127.0.0.1:8000/get_pub_key_fda', data={'username':username})
+    response = s.post('http://safecollab18.herokuapp.com/get_pub_key_fda', data={'username':username})
     pubKey = response.text
     pubKey = RSA.importKey(pubKey)
     
