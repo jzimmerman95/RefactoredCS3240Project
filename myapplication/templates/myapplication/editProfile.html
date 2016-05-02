@@ -1,0 +1,97 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+		<style type="text/css">
+		body {
+	    	background-color: lightblue;
+		}
+		label {
+			float: left;
+		    width: 150px;
+		}
+		h3, h4, p {
+			color: navy;
+			margin-left: 10px;
+		}
+		.buttons {
+			margin-left: 10px;
+		}
+		</style>
+	</head>
+	<body>
+		<h3>Edit Profile:</h3><br>
+		<div style="margin-left:10px;">
+		    <form action="edit_user_profile" method="POST" id="editUserProfile">
+				{% csrf_token %}
+				{% if form.errors %}
+					{% for field in form %}
+						{% for error in field.errors %}
+							<div class="alert alert-error">
+								<strong style="color:red;">{{ error|striptags }}</strong>
+							</div>
+						{% endfor %}
+					{% endfor %}
+					{% for error in form.non_field_errors %}
+						<div class="alert alert-error">
+							<strong>{{ error|escape }}</strong>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<div class="form-group">
+					<div>
+						<label for="username">Username: </label>
+						{{ form.username }}
+					</div>
+					<br>
+					<div>
+						<label for="email">Email: </label>
+						{{ form.email }}
+					</div>
+					<br>
+					<div>
+						<label for="firstname">First Name: </label>
+						{{ form.firstname }}
+					</div>
+					<br>
+					<div>
+						<label for="lastname">Last Name: </label>
+						{{ form.lastname }}
+					</div>
+					<br>
+					<div>
+						<label for="bio">Bio: </label>
+						{{ form.bio }}
+					</div>
+				</div>
+			    
+				<input onclick="return getId(this.id);" id="{{user.username}}" style="margin-top: 10px;" class="btn btn-primary btn-sm" type="submit" value="Save Changes"><br>
+			</form>
+		</div>
+		<div class="buttons">
+			<a class="btn btn-primary btn-sm" href="home_page">Home</a>
+		</div>
+
+		<script type="text/javascript">
+			$(document).ready(function(){
+				$('#editUserProfile').submit(function(){
+					$("<input type='text' value='' />")
+				    	.attr("id", ID)
+				    	.attr("name", "oldusername")
+				    	.attr("value", ID)
+				    	.attr("type", "hidden")
+				    	.appendTo("#editUserProfile");
+					return true;
+				});
+			});
+		</script>
+		<script type="text/javascript">
+			var ID;
+			function getId(id) {
+				ID = id;
+			}
+		</script>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384- 0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	</body>
+</html>

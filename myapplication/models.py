@@ -12,6 +12,7 @@ class UserInformation(models.Model):
 	publickey = models.CharField(max_length=200, default='none')
 	role = models.CharField(max_length=50, default='user')
 	numsitemanagersmade = models.IntegerField(default=0)
+	bio = models.CharField(max_length=1000, default='')
 
 class Groups(models.Model):
 	groupname = models.CharField(max_length=200, default='none')
