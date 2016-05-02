@@ -183,8 +183,8 @@ def edit_user_profile(request):
 			user.bio = bio
 			user.save()
 			return render(request, 'myapplication/viewProfile.html', {'user': user})
-
-	return render(request, 'myapplication/viewProfile.html', {})
+	user = UserInformation.objects.get(username=request.session['username'])
+	return render(request, 'myapplication/viewProfile.html', {'user': user})
 
 def admin_manage_reports(request):
 	if 'loggedin' in request.session and request.session['role'] == 'sitemanager':
