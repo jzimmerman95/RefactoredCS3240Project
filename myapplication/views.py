@@ -459,7 +459,7 @@ def view_shared_reports(request):
 	if 'loggedin' in request.session:
 		username = request.session.get('username')
 		sharedReports = []
-		for group in Groups.objects.filter(username=username):
+		for group in GroupUsers.objects.filter(username=username):
 			for r in ReportGroups.objects.filter(groupname=group.groupname):
 				rep = Report.objects.get(reportname=r.reportname)
 				sharedReports.append(rep)
@@ -1101,7 +1101,7 @@ def search_reports(request):
 					if report.isprivate == 'private' and report.owner == user:
 						reportsForUser.append(report)
 				# add all private reports shared with user
-				for group in Groups.objects.filter(username=user):
+				for group in GroupUsers.objects.filter(username=user):
 					# add all of the reports that are shared with that group
 					for rep in ReportGroups.objects.filter(groupname=group.groupname):
 						r = Report.objects.get(reportname=rep.reportname)
@@ -1328,7 +1328,7 @@ def fda_reports(request):
 	for rep in Report.objects.filter(owner=usr):
 		reports.append(rep)
 	# for each group that the user is in
-	for group in Groups.objects.filter(username=usr):
+	for group in GroupUsers.objects.filter(username=usr):
 		# get the reports shared with that group
 		for r in ReportGroups.objects.filter(groupname=group.groupname):
 			report = Report.objects.get(reportname=r.reportname)
