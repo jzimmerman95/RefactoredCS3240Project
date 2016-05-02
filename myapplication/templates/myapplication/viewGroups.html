@@ -34,7 +34,11 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 			{% for group in groups %}
 				<tr> 
 					<td class="gName">{{ group.groupname }}</td>
-					<td class="gOwner">{{ group.owner }}</td>
+					{%for g in allGroups%}
+						{%ifequal g.groupname group.groupname%}
+							<td class="gOwner">{{ g.owner }}</td>
+						{%endifequal%}
+					{%endfor%}
 					<td class="gUsers">
 						{% for key, value in members.items %}
 							{% ifequal key group.groupname %}

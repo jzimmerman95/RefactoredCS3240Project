@@ -235,11 +235,11 @@ def create_user_group(request):
 					members[group.groupname].append(member.username)
 
 			if request.session['role']=='sitemanager':
-				return render(request, 'myapplication/adminViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'members': members})
+				return render(request, 'myapplication/adminViewGroups.html', {'allGroups':Groups.objects.all(), 'groups': Groups.objects.all(), 'form': form, 'members': members})
 			else:
 				user = request.session['username']
-				groups = Groups.objects.all().filter(username=user)
-				return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'members': members})
+				groups = Groups.objects.filter(username=user)
+				return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'groups': groups, 'form': form, 'members': members})
 	else: 
 		return HttpResponseRedirect('home_page')
 
@@ -253,7 +253,7 @@ def admin_view_groups(request):
 
 		form = CreateGroupForm()
 		form.setChoices(request)
-		return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all(), 'members': members, 'form':form})
+		return render(request, 'myapplication/adminViewGroups.html', {'allGroups':Groups.objects.all(), 'groups':Groups.objects.all(), 'members': members, 'form':form})
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
@@ -261,7 +261,7 @@ def admin_view_groups(request):
 
 def manage_groups(request):
 	user = request.session['username']
-	groups = GroupUsers.objects.all().filter(username=user)
+	groups = GroupUsers.objects.filter(username=user)
 	form = CreateGroupForm(request.POST)
 	form.setChoices(request)
 	groupNames = []
@@ -272,7 +272,7 @@ def manage_groups(request):
 		for member in GroupUsers.objects.filter(groupname=group.groupname):
 			members[group.groupname].append(member.username)
 
-	return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'groupNames': groupNames, 'members': members})
+	return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'groups': groups, 'form': form, 'groupNames': groupNames, 'members': members})
 
 def view_groups(request):
 	newgroupname = request.POST.get('groupname')
@@ -298,7 +298,7 @@ def view_groups(request):
 		group_users_obj.save()
 
 	user = request.session['username']
-	groups = GroupUsers.objects.all().filter(username=user)
+	groups = GroupUsers.objects.filter(username=user)
 
 	groupNames = []
 	members = {}
@@ -310,7 +310,7 @@ def view_groups(request):
 				members[group.groupname].append(member.username)
 	form = CreateGroupForm()
 	form.setChoices(request)
-	return render(request, 'myapplication/viewGroups.html', {'form': form, 'groups': groups, 'groupNames': groupNames, 'members': members})	
+	return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'form': form, 'groups': groups, 'groupNames': groupNames, 'members': members})	
 
 
 def admin_delete_group(request):
@@ -319,7 +319,7 @@ def admin_delete_group(request):
 			reportToDelete = request.POST.get('deleteGroup')
 			inst = Groups.objects.get(groupname=reportToDelete)
 			inst.delete()
-		return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all()})
+		return render(request, 'myapplication/adminViewGroups.html', {'allGroups':Groups.objects.all(), 'groups':Groups.objects.all()})
 	elif 'loggedin' in request.session:
 		return render(request, 'myapplication/memberHomePage.html', {'keyPairForm':RequestNewKeyPairForm(), 'passForm':ResetPassForm()})
 	else: 
@@ -343,9 +343,9 @@ def delete_group(request):
 	form = CreateGroupForm(request.POST)
 	form.setChoices(request)
 
-	groups = GroupUsers.objects.all().filter(username=user)
+	groups = GroupUsers.objects.filter(username=user)
 
-	return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'members': members, 'form': form})
+	return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'groups': groups, 'members': members, 'form': form})
 
 def add_users_to_group(request):
 	users = request.POST.getlist('users')
@@ -363,11 +363,11 @@ def add_users_to_group(request):
 	form.setChoices(request)
 
 	if request.session['role']=='sitemanager':
-		return render(request, 'myapplication/adminViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'members': members})
+		return render(request, 'myapplication/adminViewGroups.html', {'allGroups':Groups.objects.all(), 'groups': Groups.objects.all(), 'form': form, 'members': members})
 	else:
 		user = request.session['username']
-		groups = Groups.objects.all().filter(username=user)
-		return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'members': members})
+		groups = Groups.objects.filter(username=user)
+		return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'groups': groups, 'form': form, 'members': members})
 
 def delete_users_from_group(request):
 	users = request.POST.getlist('users')
@@ -385,11 +385,11 @@ def delete_users_from_group(request):
 	form.setChoices(request)
 
 	if request.session['role']=='sitemanager':
-		return render(request, 'myapplication/adminViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'members': members})
+		return render(request, 'myapplication/adminViewGroups.html', {'allGroups':Groups.objects.all(), 'groups': Groups.objects.all(), 'form': form, 'members': members})
 	else:
 		user = request.session['username']
-		groups = GroupUsers.objects.all().filter(username=user)
-		return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'form': form, 'members': members})
+		groups = GroupUsers.objects.filter(username=user)
+		return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'groups': groups, 'form': form, 'members': members})
 
 
 def create_report(request):
