@@ -343,7 +343,7 @@ def delete_group(request):
 	form = CreateGroupForm(request.POST)
 	form.setChoices(request)
 
-	groups = GroupUsers.objects.filter(username=user)
+	groups = GroupUsers.objects.filter(username=request.session['username'])
 
 	return render(request, 'myapplication/viewGroups.html', {'allGroups':Groups.objects.all(), 'groups': groups, 'members': members, 'form': form})
 
