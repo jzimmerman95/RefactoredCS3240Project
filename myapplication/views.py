@@ -66,7 +66,10 @@ def sign_user_up(request):
 					user_inf_obj.save()
 					# create and save a user object for authentication
 					user = User.objects.create_user(username=username, password=pwd, first_name=fname, last_name=lname)
-					user.save()					
+					user.save()							
+					# use django's built-in login function to log the user in
+					user = authenticate(username=username, password=pwd)
+					login(request, user)		
 					# set session username, first name, last name, email, and publickey
 					request.session['username'] = username
 					request.session['firstname'] = fname
@@ -74,9 +77,7 @@ def sign_user_up(request):
 					request.session['email'] = email
 					request.session['role'] = 'user'
 					request.session['loggedin'] = True
-					# # use django's built-in login function to log the user in
-					user = authenticate(username=username, password=pwd)
-					login(request, user)
+
 					# send user to page with modal pop-up displaying his/her private key, prompt them to write it down
 					# format private key
 					privateKey = str(key.exportKey())
