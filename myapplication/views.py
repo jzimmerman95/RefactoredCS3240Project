@@ -209,35 +209,36 @@ def create_user_group(request):
 	if 'loggedin' in request.session: 
 		if request.method == 'POST':
 			form = CreateGroupForm(request.POST)
+			form.setChoices(request)
 
-		group_name = request.POST.get('groupname', '')
-		user = request.session['username']
-
-		if (Groups.objects.filter(groupname=group_name).exists()):
-			form.add_error('groupname', 'The group name you entered is already taken. Please enter a new one.')
-		else:
-			group = Groups(groupname=group_name, owner=user, username=user)
-			group.save()
-			users = request.POST.getlist('users')
-			for user in users:
-				group_users_obj = GroupUsers(groupname=group.groupname, username=user)
-				group_users_obj.save()
-
-		form = CreateGroupForm(request.POST)
-		form.setChoices(request)
-
-		members = {}
-		for group in Groups.objects.all():
-			members[group.groupname] = []
-			for member in GroupUsers.objects.filter(groupname=group.groupname):
-				members[group.groupname].append(member.username)
-
-		if request.session['role']=='sitemanager':
-			return render(request, 'myapplication/adminViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'members': members})
-		else:
+			group_name = request.POST.get('groupname', '')
 			user = request.session['username']
-			groups = Groups.objects.all().filter(username=user)
-			return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'members': members})
+
+			if (Groups.objects.filter(groupname=group_name).exists()):
+				form.add_error('groupname', 'The group name you entered is already taken. Please enter a new one.')
+			else:
+				group = Groups(groupname=group_name, owner=user, username=user)
+				group.save()
+				creator = GroupUsers(groupname=group_name, username=user)
+				creator.save()
+
+				users = request.POST.getlist('users')
+				for user in users:
+					group_users_obj = GroupUsers(groupname=group.groupname, username=user)
+					group_users_obj.save()
+
+			members = {}
+			for group in Groups.objects.all():
+				members[group.groupname] = []
+				for member in GroupUsers.objects.filter(groupname=group.groupname):
+					members[group.groupname].append(member.username)
+
+			if request.session['role']=='sitemanager':
+				return render(request, 'myapplication/adminViewGroups.html', {'groups': Groups.objects.all(), 'form': form, 'members': members})
+			else:
+				user = request.session['username']
+				groups = Groups.objects.all().filter(username=user)
+				return render(request, 'myapplication/ViewGroups.html', {'groups': groups, 'form': form, 'members': members})
 	else: 
 		return HttpResponseRedirect('home_page')
 
@@ -248,6 +249,7 @@ def admin_view_groups(request):
 			members[group.groupname] = []
 			for member in GroupUsers.objects.filter(groupname=group.groupname):
 				members[group.groupname].append(member.username)
+
 		form = CreateGroupForm()
 		form.setChoices(request)
 		return render(request, 'myapplication/adminViewGroups.html', {'groups':Groups.objects.all(), 'members': members, 'form':form})
@@ -258,7 +260,7 @@ def admin_view_groups(request):
 
 def manage_groups(request):
 	user = request.session['username']
-	groups = GroupsUsers.objects.all().filter(username=user)
+	groups = GroupUsers.objects.all().filter(username=user)
 	form = CreateGroupForm(request.POST)
 	form.setChoices(request)
 	groupNames = []
@@ -287,7 +289,7 @@ def view_groups(request):
 			g.groupname = newgroupname
 			g.save()
 	else:
-		pass 
+		pass
 
 	users = request.POST.getlist('users')
 	for user in users:
@@ -295,7 +297,7 @@ def view_groups(request):
 		group_users_obj.save()
 
 	user = request.session['username']
-	groups = Groups.objects.all().filter(username=user)
+	groups = GroupUsers.objects.all().filter(username=user)
 
 	groupNames = []
 	members = {}
@@ -303,7 +305,8 @@ def view_groups(request):
 		groupNames.append(group.groupname)
 		members[group.groupname] = []
 		for member in GroupUsers.objects.filter(groupname=group.groupname):
-			members[group.groupname].append(member.username)
+			if member.username not in members[group.groupname]:
+				members[group.groupname].append(member.username)
 	form = CreateGroupForm()
 	form.setChoices(request)
 	return render(request, 'myapplication/viewGroups.html', {'form': form, 'groups': groups, 'groupNames': groupNames, 'members': members})	
@@ -339,7 +342,9 @@ def delete_group(request):
 	form = CreateGroupForm(request.POST)
 	form.setChoices(request)
 
-	return render(request, 'myapplication/viewGroups.html', {'groups':Groups.objects.all(), 'members': members, 'form': form})
+	groups = GroupUsers.objects.all().filter(username=user)
+
+	return render(request, 'myapplication/viewGroups.html', {'groups': groups, 'members': members, 'form': form})
 
 def add_users_to_group(request):
 	users = request.POST.getlist('users')

@@ -213,17 +213,6 @@ integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkz
 		$(document).ready(function(){
 
 			$('#modifyForm').submit(function(){
-				if ($("#modifyForm").data("changed")) {
-					var RLIST = {{ groupNames|safe }};
-					var newName = document.getElementById('groupnameid').value;
-
-					for (i = 0; i < RLIST.length; i++) {
-						if (RLIST[i] == newName) {
-							alert("A report with that name already exists. Please enter a different name.");
-							return false;
-						}
-					}
-				} 
 				$("<input type='text' value='' />")
 			    	.attr("id", ID)
 			    	.attr("name", "oldgroupname")
